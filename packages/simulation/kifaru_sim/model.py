@@ -212,7 +212,7 @@ def apply_slot_cap(arrivals: np.ndarray, cap: int, rng: np.random.Generator, win
     n_windows = int(arrivals.max() // window_s) + 1 + len(arrivals) // max(cap, 1) + 1
     idx = 0
     for w in range(n_windows):
-        lo, hi = w * window_s, (w + 1) * window_s
+        _lo, hi = w * window_s, (w + 1) * window_s
         current = list(carry)
         carry = []
         while idx < len(arrivals) and arrivals[idx] < hi:
