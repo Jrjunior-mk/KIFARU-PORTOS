@@ -79,7 +79,7 @@ class Snapshot:
 
 
 def _limits_to_dict(ln: LimitSet) -> dict:
-    d = asdict(l)
+    d = asdict(ln)
     return d
 
 

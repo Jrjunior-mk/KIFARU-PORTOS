@@ -100,7 +100,7 @@ def test_measurement_to_frames_and_back_preserves_api_fields():
     # CAN-FD path: summary without axle records, axles only from AXLE_EVENTs (arriving before the summary)
     asm2 = dc.PassAssembler("daq-test")
     summary = dc.PassSummary.unpack(frames[-1][1])
-    for t, payload in frames[:-1]:
+    for _t, payload in frames[:-1]:
         assert asm2.add(dc.AxleEvent.unpack(payload), now=0.0) is None
     out2 = asm2.add(dc.PassSummary.unpack(summary.pack(include_axles=False)), now=0.0)
     assert out2 is not None
