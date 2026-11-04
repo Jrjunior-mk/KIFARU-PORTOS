@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from ..config import get_settings
@@ -48,6 +48,9 @@ def append(
 ) -> LedgerEvent:
     s = get_settings()
     occurred_at = occurred_at or utcnow()
+    if db.get_bind().dialect.name == "postgresql":
+        # serialise concurrent appends so (seq, prev_hash) can never fork; the lock is released at transaction end
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtext('kifaru_ledger'))"))
     last = db.execute(select(LedgerEvent).order_by(LedgerEvent.seq.desc()).limit(1)).scalar_one_or_none()
     seq = (last.seq + 1) if last else 1
     prev_hash = last.hash if last else GENESIS_HASH

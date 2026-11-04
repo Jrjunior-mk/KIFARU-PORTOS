@@ -1,0 +1,218 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags-ignore: ["v*"] # releases are handled by deploy.yml
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write # Trivy SARIF upload
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+  TERRAFORM_VERSION: "1.9.8"
+
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }} - lint and test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            apps/api/pyproject.toml
+            packages/*/pyproject.toml
+
+      - name: Install workspace (editable)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e packages/wim_dsp -e packages/ai_agents -e packages/simulation
+          pip install -e "apps/api[dev]" email-validator
+
+      - name: Ruff
+        run: |
+          ruff --version
+          ruff check packages/wim_dsp packages/ai_agents apps/api
+
+      - name: Pytest - wim_dsp
+        run: pytest -q packages/wim_dsp
+
+      - name: Pytest - ai_agents
+        run: pytest -q packages/ai_agents
+
+      - name: Pytest - api
+        working-directory: apps/api
+        env:
+          KIFARU_ENV: test
+          KIFARU_JWT_SECRET: ci-only-secret-not-for-production-use
+        run: pytest -q
+
+  web:
+    name: Web - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect web app
+        id: detect
+        run: |
+          if [ -f apps/web/package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "apps/web/package.json not found; skipping web build"; fi
+
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.present == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install
+        if: steps.detect.outputs.present == 'true'
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Lint and typecheck (if scripts exist)
+        if: steps.detect.outputs.present == 'true'
+        working-directory: apps/web
+        run: |
+          npm run --if-present lint
+          npm run --if-present typecheck
+
+      - name: Build
+        if: steps.detect.outputs.present == 'true'
+        working-directory: apps/web
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        if: steps.detect.outputs.present == 'true'
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 7
+
+  terraform:
+    name: Terraform - fmt and validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: terraform fmt -check
+        working-directory: infra/terraform
+        run: terraform fmt -check -recursive -diff
+
+      - name: terraform validate (all roots and modules)
+        working-directory: infra/terraform
+        env:
+          TF_IN_AUTOMATION: "1"
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tf-plugin-cache
+        run: |
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          status=0
+          for d in bootstrap envs/dev envs/staging envs/prod modules/*; do
+            echo "::group::$d"
+            (cd "$d" && terraform init -backend=false -input=false >/dev/null && terraform validate) || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+  security:
+    name: Security - pip-audit and Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install workspace for audit
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          pip install -e packages/wim_dsp -e packages/ai_agents -e packages/simulation
+          pip install -e apps/api email-validator boto3
+
+      - name: pip-audit (installed environment)
+        # Known-unfixable advisories can be ignored with --ignore-vuln <ID>; keep the list in this file, reviewed.
+        run: pip-audit --strict --progress-spinner off
+
+      - name: Trivy - filesystem (dependencies, IaC misconfig, secrets)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-fs.sarif
+          exit-code: "0"
+
+      - name: Upload Trivy results to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+      - name: Trivy - Terraform misconfiguration gate
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: infra/terraform
+          severity: CRITICAL
+          exit-code: "1"
+          format: table
+
+  docker:
+    name: Docker - build api image (no push)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          load: true
+          tags: kifaru/api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test image (health endpoint with SQLite)
+        run: |
+          docker run -d --name api -p 8000:8000 -e KIFARU_ENV=test -e KIFARU_JWT_SECRET=ci-only-secret-not-for-production-use -e KIFARU_DATABASE_URL=sqlite:////tmp/ci.db kifaru/api:ci
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8000/health; then echo; exit 0; fi
+            sleep 3
+          done
+          docker logs api
+          exit 1
+      - name: Trivy - image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: kifaru/api:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+          format: table

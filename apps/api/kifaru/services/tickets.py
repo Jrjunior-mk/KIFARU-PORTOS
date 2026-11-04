@@ -61,7 +61,13 @@ def issue(db: Session, ev: WeighingEvent, dec: ClearanceDecision, ticket_type: s
 
 
 def verify(t: DigitalTicket) -> bool:
-    return verify_signature(t.payload, t.signature, t.payload.get("public_key"))
+    """Server-side verification uses the platform's known key for `signer_key_id`, never the key embedded in the
+    payload (a forged payload could embed the forger's key). The embedded key is for offline verifiers only."""
+    known = {get_settings().signing_key_id: public_key_b64()}
+    key = known.get(t.signer_key_id)
+    if key is None:
+        return False
+    return verify_signature(t.payload, t.signature, key)
 
 
 def qr_svg(t: DigitalTicket) -> str:

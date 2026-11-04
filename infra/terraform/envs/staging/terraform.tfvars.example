@@ -1,0 +1,114 @@
+# KIFARU PORTOS - staging environment. Copy to terraform.tfvars (git-ignored) and replace every <PLACEHOLDER>.
+# Prod-shaped but smaller. Budget target: about USD 150-200/month.
+
+env        = "staging"
+aws_region = "af-south-1"
+dr_region  = "eu-west-1"
+
+# --- Owner-provided ------------------------------------------------------------------------------------------------------
+route53_zone_id   = "<ROUTE53_ZONE_ID>"
+web_domain        = "app.staging.<DOMAIN>"
+api_domain        = "api.staging.<DOMAIN>"
+api_origin_domain = "api-origin.staging.<DOMAIN>"
+alarm_email       = "<ops-alerts@example.com>"
+
+github_org              = "<GITHUB_ORG>"
+github_repo             = "kifaru-portos"
+github_allowed_subjects = ["environment:staging"]
+create_oidc_provider    = true # false if this AWS account already has the GitHub OIDC provider (e.g. shared with dev)
+
+state_bucket_arn     = "arn:aws:s3:::kifaru-terraform-state-<ACCOUNT_ID>"
+state_lock_table_arn = "arn:aws:dynamodb:af-south-1:<ACCOUNT_ID>:table/kifaru-terraform-locks"
+
+# --- Images --------------------------------------------------------------------------------------------------------------
+image_tag        = "latest" # overridden by the deploy workflow
+cpu_architecture = "X86_64"
+
+# --- Network -------------------------------------------------------------------------------------------------------------
+vpc_cidr                   = "10.41.0.0/16"
+single_nat_gateway         = true
+enable_interface_endpoints = true
+
+# --- Compute -------------------------------------------------------------------------------------------------------------
+use_fargate_spot           = false
+restrict_alb_to_cloudfront = true
+create_seed_task           = true # demo data is acceptable in staging for UAT; remove before copying prod data here
+log_level                  = "INFO"
+log_retention_days         = 30
+
+services = {
+  api = {
+    cpu           = 512
+    memory        = 1024
+    desired_count = 2
+    min_count     = 2
+    max_count     = 4
+    command       = ["uvicorn", "kifaru.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    attach_alb    = true
+    priority      = 100
+  }
+  realtime = {
+    cpu           = 256
+    memory        = 512
+    desired_count = 2
+    min_count     = 2
+    max_count     = 4
+    command       = ["uvicorn", "kifaru.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    attach_alb    = true
+    path_patterns = ["/ws/*"]
+    priority      = 10
+  }
+  worker = {
+    cpu           = 256
+    memory        = 512
+    desired_count = 1
+    min_count     = 1
+    max_count     = 2
+    command       = ["python", "-m", "kifaru.worker"]
+    attach_alb    = false
+  }
+  ingest = {
+    cpu           = 256
+    memory        = 512
+    desired_count = 1
+    min_count     = 1
+    max_count     = 2
+    command       = ["python", "-m", "kifaru.ingest"]
+    attach_alb    = false
+  }
+}
+
+# --- Database ------------------------------------------------------------------------------------------------------------
+rds_instance_class                  = "db.t4g.small"
+rds_allocated_storage               = 50
+rds_max_allocated_storage           = 200
+rds_multi_az                        = false
+rds_deletion_protection             = true
+rds_skip_final_snapshot             = false
+rds_cross_region_backup_replication = false
+rds_rotation_lambda_arn             = null
+rds_max_connections_alarm           = 130
+
+# --- Redis ---------------------------------------------------------------------------------------------------------------
+redis_node_type                = "cache.t4g.micro"
+redis_num_cache_clusters       = 1
+redis_snapshot_retention_limit = 3
+
+# --- Storage -------------------------------------------------------------------------------------------------------------
+s3_enable_replication = true
+s3_force_destroy      = false
+
+# --- IoT -----------------------------------------------------------------------------------------------------------------
+iot_mode             = "iot_core" # switch to "emqx" (and set emqx_certificate_arn) if IoT Core is unavailable in af-south-1
+emqx_certificate_arn = null
+enable_iot_logging   = false
+
+# --- Edge ----------------------------------------------------------------------------------------------------------------
+cloudfront_price_class = "PriceClass_All"
+waf_rate_limit         = 2000
+waf_rate_limit_auth    = 100
+
+# --- Secrets / backups ---------------------------------------------------------------------------------------------------
+secrets_recovery_window_in_days = 7
+enable_pg_dump                  = true
+pg_dump_schedule                = "cron(30 0 * * ? *)"

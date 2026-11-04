@@ -1,0 +1,8783 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "KIFARU PORTOS API",
+  "description": "\n**Kenya Intelligent Freight, Access, Routing & Unified Logistics Platform** \u2014 backend API.\n\n* Rolling clearance (WIM pre-screen -> deterministic GREEN/AMBER/RED). The static scale remains the legal reference.\n* Digital cargo passport, signed weighing tickets with QR verification, hash-chained ledger.\n* Queue forecasting and slot booking, backhaul marketplace, environmental estimates (modelled).\n* Every record carries `source` = `live` | `simulated` | `replay`. Simulated data is never presented as live.\n",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/api/v1/auth/register": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Register",
+    "operationId": "register_api_v1_auth_register_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RegisterIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Login",
+    "operationId": "login_api_v1_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/refresh": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Refresh",
+    "operationId": "refresh_api_v1_auth_refresh_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Logout",
+    "operationId": "logout_api_v1_auth_logout_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/me": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Me",
+    "operationId": "me_api_v1_auth_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MeOut"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/auth/mfa/setup": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Mfa Setup",
+    "operationId": "mfa_setup_api_v1_auth_mfa_setup_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MfaSetupOut"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/auth/mfa/enable": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Mfa Enable",
+    "operationId": "mfa_enable_api_v1_auth_mfa_enable_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MfaCodeIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/auth/mfa/verify": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Mfa Verify",
+    "operationId": "mfa_verify_api_v1_auth_mfa_verify_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MfaCodeIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/fleet/orgs": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "List Orgs",
+    "operationId": "list_orgs_api_v1_fleet_orgs_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/OrgOut"
+         },
+         "title": "Response List Orgs Api V1 Fleet Orgs Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/fleet/fleets": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "List Fleets",
+    "operationId": "list_fleets_api_v1_fleet_fleets_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FleetOut"
+         },
+         "type": "array",
+         "title": "Response List Fleets Api V1 Fleet Fleets Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Create Fleet",
+    "operationId": "create_fleet_api_v1_fleet_fleets_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FleetIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FleetOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/fleet/vehicles": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "List Vehicles",
+    "operationId": "list_vehicles_api_v1_fleet_vehicles_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "org_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Org Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/VehicleOut"
+         },
+         "title": "Response List Vehicles Api V1 Fleet Vehicles Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Create Vehicle",
+    "operationId": "create_vehicle_api_v1_fleet_vehicles_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VehicleIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VehicleOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/fleet/vehicles/{vehicle_id}": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Get Vehicle",
+    "operationId": "get_vehicle_api_v1_fleet_vehicles__vehicle_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "vehicle_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Vehicle Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VehicleOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/fleet/vehicles/{vehicle_id}/position": {
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Update Position",
+    "description": "Telematics position update (from the driver app or a telematics adapter).",
+    "operationId": "update_position_api_v1_fleet_vehicles__vehicle_id__position_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "vehicle_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Vehicle Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PositionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VehicleOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/fleet/vehicles/{vehicle_id}/watchlist": {
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Set Watchlist",
+    "operationId": "set_watchlist_api_v1_fleet_vehicles__vehicle_id__watchlist_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "vehicle_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Vehicle Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WatchlistIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VehicleOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/fleet/trailers": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "List Trailers",
+    "operationId": "list_trailers_api_v1_fleet_trailers_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TrailerOut"
+         },
+         "type": "array",
+         "title": "Response List Trailers Api V1 Fleet Trailers Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Create Trailer",
+    "operationId": "create_trailer_api_v1_fleet_trailers_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TrailerIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TrailerOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/fleet/drivers": {
+   "get": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "List Drivers",
+    "operationId": "list_drivers_api_v1_fleet_drivers_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/DriverOut"
+         },
+         "type": "array",
+         "title": "Response List Drivers Api V1 Fleet Drivers Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "fleet"
+    ],
+    "summary": "Create Driver",
+    "operationId": "create_driver_api_v1_fleet_drivers_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DriverIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DriverOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/stations": {
+   "get": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "List Stations",
+    "operationId": "list_stations_api_v1_stations_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/StationOut"
+         },
+         "type": "array",
+         "title": "Response List Stations Api V1 Stations Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Create Station",
+    "operationId": "create_station_api_v1_stations_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StationIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/stations/{station_id}": {
+   "get": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Get Station",
+    "operationId": "get_station_api_v1_stations__station_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/stations/{station_id}/status": {
+   "post": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Set Station Status",
+    "operationId": "set_station_status_api_v1_stations__station_id__status_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StationStatusIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/stations/{station_id}/lanes": {
+   "post": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Create Lane",
+    "operationId": "create_lane_api_v1_stations__station_id__lanes_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LaneIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LaneOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/stations/sensors/{sensor_id}/health": {
+   "post": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Set Sensor Health",
+    "operationId": "set_sensor_health_api_v1_stations_sensors__sensor_id__health_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "sensor_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sensor Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SensorHealthIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SensorOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/stations/sensors/{sensor_id}/calibrations": {
+   "post": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Add Calibration",
+    "operationId": "add_calibration_api_v1_stations_sensors__sensor_id__calibrations_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "sensor_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sensor Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CalibrationIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CalibrationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "List Calibrations",
+    "operationId": "list_calibrations_api_v1_stations_sensors__sensor_id__calibrations_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "sensor_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Sensor Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/CalibrationOut"
+         },
+         "title": "Response List Calibrations Api V1 Stations Sensors  Sensor Id  Calibrations Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/stations/meta/sensor-kinds": {
+   "get": {
+    "tags": [
+     "stations"
+    ],
+    "summary": "Sensor Kinds",
+    "operationId": "sensor_kinds_api_v1_stations_meta_sensor_kinds_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/events": {
+   "get": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "List Events",
+    "operationId": "list_events_api_v1_weighing_events_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Station Id"
+      }
+     },
+     {
+      "name": "vehicle_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Vehicle Id"
+      }
+     },
+     {
+      "name": "decision",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Decision"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 500,
+       "default": 50,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/WeighingOut"
+         },
+         "title": "Response List Events Api V1 Weighing Events Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/events/{event_id}": {
+   "get": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Get Event",
+    "operationId": "get_event_api_v1_weighing_events__event_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Event Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WeighingOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/stats": {
+   "get": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Stats",
+    "operationId": "stats_api_v1_weighing_stats_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Station Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StatsOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/ingest": {
+   "post": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Ingest",
+    "description": "Live measurements from an edge gateway. In the cloud the gateway authenticates with an mTLS device certificate at\nIoT Core and the ingest worker calls this with a service token; locally an operator token is accepted.",
+    "operationId": "ingest_api_v1_weighing_ingest_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EdgeIngestIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WeighingOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/weighing/simulate": {
+   "post": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Simulate",
+    "description": "Generates synthetic lane passes through the full pipeline. Output is tagged source=simulated everywhere.",
+    "operationId": "simulate_api_v1_weighing_simulate_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SimulateIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/WeighingOut"
+         },
+         "type": "array",
+         "title": "Response Simulate Api V1 Weighing Simulate Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/weighing/events/{event_id}/static-verify": {
+   "post": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Static Verify",
+    "description": "Record the static-scale result for an AMBER/RED pass. The static scale is the legal reference; this issues the\n`static_certified` ticket and records the WIM-vs-static error for accuracy benchmarking.",
+    "operationId": "static_verify_api_v1_weighing_events__event_id__static_verify_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Event Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StaticVerifyIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WeighingOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/events/{event_id}/override-release": {
+   "post": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Override Release",
+    "description": "Operator override (requires MFA). Only allowed when a static verification exists; the original decision is never deleted.",
+    "operationId": "override_release_api_v1_weighing_events__event_id__override_release_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Event Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/OverrideIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WeighingOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/weighing/limits": {
+   "get": {
+    "tags": [
+     "weighing"
+    ],
+    "summary": "Limits",
+    "operationId": "limits_api_v1_weighing_limits_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/tickets/{ticket_id}": {
+   "get": {
+    "tags": [
+     "tickets"
+    ],
+    "summary": "Get Ticket",
+    "operationId": "get_ticket_api_v1_tickets__ticket_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "ticket_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Ticket Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TicketOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/tickets/{ticket_id}/qr.svg": {
+   "get": {
+    "tags": [
+     "tickets"
+    ],
+    "summary": "Ticket Qr",
+    "operationId": "ticket_qr_api_v1_tickets__ticket_id__qr_svg_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "ticket_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Ticket Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/tickets/verify/{qr_token}": {
+   "get": {
+    "tags": [
+     "tickets",
+     "public"
+    ],
+    "summary": "Verify Public",
+    "description": "Public, unauthenticated verification of a QR ticket. Returns only non-sensitive fields.",
+    "operationId": "verify_public_api_v1_tickets_verify__qr_token__get",
+    "parameters": [
+     {
+      "name": "qr_token",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Qr Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VerifyOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments": {
+   "get": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "List Shipments",
+    "operationId": "list_shipments_api_v1_shipments_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "stage",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Stage"
+      }
+     },
+     {
+      "name": "warehouse_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Warehouse Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PassportOut"
+         },
+         "title": "Response List Shipments Api V1 Shipments Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Create Shipment",
+    "operationId": "create_shipment_api_v1_shipments_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ShipmentIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PassportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments/{shipment_id}": {
+   "get": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Get Shipment",
+    "operationId": "get_shipment_api_v1_shipments__shipment_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "shipment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Shipment Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PassportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments/{shipment_id}/stage": {
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Advance Stage",
+    "operationId": "advance_stage_api_v1_shipments__shipment_id__stage_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "shipment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Shipment Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StageIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PassportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments/{shipment_id}/assign": {
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Assign Truck",
+    "operationId": "assign_truck_api_v1_shipments__shipment_id__assign_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "shipment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Shipment Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AssignIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PassportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments/{shipment_id}/seal": {
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Seal Update",
+    "operationId": "seal_update_api_v1_shipments__shipment_id__seal_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "shipment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Shipment Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SealIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PassportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/shipments/warehouses/all": {
+   "get": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "List Warehouses",
+    "operationId": "list_warehouses_api_v1_shipments_warehouses_all_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/WarehouseOut"
+         },
+         "type": "array",
+         "title": "Response List Warehouses Api V1 Shipments Warehouses All Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/shipments/warehouses": {
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Create Warehouse",
+    "operationId": "create_warehouse_api_v1_shipments_warehouses_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WarehouseIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WarehouseOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/shipments/warehouses/{warehouse_id}/readiness": {
+   "post": {
+    "tags": [
+     "shipments"
+    ],
+    "summary": "Set Readiness",
+    "operationId": "set_readiness_api_v1_shipments_warehouses__warehouse_id__readiness_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "warehouse_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Warehouse Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReadinessIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WarehouseOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/{station_id}/history": {
+   "get": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "History",
+    "operationId": "history_api_v1_queue__station_id__history_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     },
+     {
+      "name": "hours",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 24,
+       "title": "Hours"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/QueueOut"
+         },
+         "title": "Response History Api V1 Queue  Station Id  History Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/{station_id}/observe": {
+   "post": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "Observe",
+    "operationId": "observe_api_v1_queue__station_id__observe_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ObservationIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/{station_id}/forecast": {
+   "get": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "Forecast",
+    "description": "Forecasts queue length / wait at +15, +30, +60, +120 min. Uses the traffic-forecast agent on observed history.",
+    "operationId": "forecast_api_v1_queue__station_id__forecast_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/QueueOut"
+         },
+         "title": "Response Forecast Api V1 Queue  Station Id  Forecast Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/{station_id}/slots": {
+   "get": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "Slots",
+    "operationId": "slots_api_v1_queue__station_id__slots_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     },
+     {
+      "name": "hours",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 6,
+       "title": "Hours"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SlotOut"
+         },
+         "title": "Response Slots Api V1 Queue  Station Id  Slots Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/{station_id}/appointments": {
+   "post": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "Book",
+    "operationId": "book_api_v1_queue__station_id__appointments_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Station Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BookIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AppointmentOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/appointments/mine": {
+   "get": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "My Appointments",
+    "operationId": "my_appointments_api_v1_queue_appointments_mine_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "station_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Station Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AppointmentOut"
+         },
+         "title": "Response My Appointments Api V1 Queue Appointments Mine Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/queue/appointments/{appointment_id}/status": {
+   "post": {
+    "tags": [
+     "queue"
+    ],
+    "summary": "Appt Status",
+    "operationId": "appt_status_api_v1_queue_appointments__appointment_id__status_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "appointment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Appointment Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ApptStatusIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AppointmentOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/offers": {
+   "get": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "List Offers",
+    "operationId": "list_offers_api_v1_backhaul_offers_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/OfferOut"
+         },
+         "title": "Response List Offers Api V1 Backhaul Offers Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Create Offer",
+    "operationId": "create_offer_api_v1_backhaul_offers_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/OfferIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OfferOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/offers/{offer_id}/match": {
+   "post": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Run Matching",
+    "description": "Runs the matching agent over all available trucks and stores PROPOSED matches. Nothing is assigned.",
+    "operationId": "run_matching_api_v1_backhaul_offers__offer_id__match_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "offer_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Offer Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OfferOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/matches/{match_id}/transporter-decision": {
+   "post": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Transporter Decision",
+    "operationId": "transporter_decision_api_v1_backhaul_matches__match_id__transporter_decision_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "match_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Match Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DecisionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MatchOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/matches/{match_id}/owner-decision": {
+   "post": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Owner Decision",
+    "operationId": "owner_decision_api_v1_backhaul_matches__match_id__owner_decision_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "match_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Match Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DecisionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MatchOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/matches/{match_id}/deliver": {
+   "post": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Deliver",
+    "operationId": "deliver_api_v1_backhaul_matches__match_id__deliver_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "match_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Match Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DeliverIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MatchOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/backhaul/opportunities": {
+   "get": {
+    "tags": [
+     "backhaul"
+    ],
+    "summary": "Opportunities",
+    "description": "Transporter view: open/matched offers plus matches proposed to this transporter's trucks.",
+    "operationId": "opportunities_api_v1_backhaul_opportunities_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/OfferOut"
+         },
+         "type": "array",
+         "title": "Response Opportunities Api V1 Backhaul Opportunities Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/notifications": {
+   "get": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "Inbox",
+    "operationId": "inbox_api_v1_notifications_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "unread_only",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Unread Only"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/NotificationOut"
+         },
+         "title": "Response Inbox Api V1 Notifications Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/notifications/{notification_id}/read": {
+   "post": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "Mark Read",
+    "operationId": "mark_read_api_v1_notifications__notification_id__read_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "notification_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Notification Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/notifications/send": {
+   "post": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "Send",
+    "operationId": "send_api_v1_notifications_send_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SendIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/NotificationOut"
+         },
+         "type": "array",
+         "title": "Response Send Api V1 Notifications Send Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/notifications/templates/sms": {
+   "get": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "Sms Templates",
+    "operationId": "sms_templates_api_v1_notifications_templates_sms_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/environment/report": {
+   "get": {
+    "tags": [
+     "environment"
+    ],
+    "summary": "Report",
+    "operationId": "report_api_v1_environment_report_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "hours",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 24,
+       "title": "Hours"
+      }
+     },
+     {
+      "name": "station_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Station Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EnvReportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/environment/what-if": {
+   "post": {
+    "tags": [
+     "environment"
+    ],
+    "summary": "What If",
+    "operationId": "what_if_api_v1_environment_what_if_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WhatIfIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response What If Api V1 Environment What If Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/environment/factors": {
+   "get": {
+    "tags": [
+     "environment"
+    ],
+    "summary": "Factors",
+    "operationId": "factors_api_v1_environment_factors_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/integrations": {
+   "get": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "List Integrations",
+    "operationId": "list_integrations_api_v1_integrations_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/IntegrationOut"
+         },
+         "type": "array",
+         "title": "Response List Integrations Api V1 Integrations Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/integrations/{name}/mode": {
+   "post": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "Set Mode",
+    "operationId": "set_mode_api_v1_integrations__name__mode_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ModeIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IntegrationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/integrations/{name}/health": {
+   "post": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "Health Check",
+    "operationId": "health_check_api_v1_integrations__name__health_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IntegrationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/integrations/ntsa/vehicle/{plate}": {
+   "get": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "Ntsa Lookup",
+    "operationId": "ntsa_lookup_api_v1_integrations_ntsa_vehicle__plate__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "plate",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Plate"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LookupOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/integrations/kra/declaration/{reference}": {
+   "get": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "Kra Lookup",
+    "operationId": "kra_lookup_api_v1_integrations_kra_declaration__reference__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "reference",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Reference"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LookupOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/integrations/maps/route": {
+   "get": {
+    "tags": [
+     "integrations"
+    ],
+    "summary": "Route",
+    "description": "Routing: real mode calls an OSRM-compatible endpoint; mock uses great-circle x 1.25 road factor.",
+    "operationId": "route_api_v1_integrations_maps_route_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "from_lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "title": "From Lat"
+      }
+     },
+     {
+      "name": "from_lon",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "title": "From Lon"
+      }
+     },
+     {
+      "name": "to_lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "title": "To Lat"
+      }
+     },
+     {
+      "name": "to_lon",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "title": "To Lon"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/users": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "List Users",
+    "operationId": "list_users_api_v1_admin_users_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/UserOut"
+         },
+         "type": "array",
+         "title": "Response List Users Api V1 Admin Users Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Create User",
+    "operationId": "create_user_api_v1_admin_users_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UserIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/admin/users/{user_id}": {
+   "patch": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Patch User",
+    "operationId": "patch_user_api_v1_admin_users__user_id__patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "User Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UserPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/roles": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Roles",
+    "operationId": "roles_api_v1_admin_roles_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/admin/audit": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Audit Log",
+    "operationId": "audit_log_api_v1_admin_audit_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "entity",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Entity"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "default": 100,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AuditOut"
+         },
+         "title": "Response Audit Log Api V1 Admin Audit Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ledger": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Ledger Tail",
+    "operationId": "ledger_tail_api_v1_admin_ledger_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "default": 100,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/LedgerOut"
+         },
+         "title": "Response Ledger Tail Api V1 Admin Ledger Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ledger/verify": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Ledger Verify",
+    "operationId": "ledger_verify_api_v1_admin_ledger_verify_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/admin/incidents": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Incidents",
+    "operationId": "incidents_api_v1_admin_incidents_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": "open",
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/IncidentOut"
+         },
+         "title": "Response Incidents Api V1 Admin Incidents Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Open Incident",
+    "operationId": "open_incident_api_v1_admin_incidents_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/IncidentIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IncidentOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/incidents/{incident_id}/close": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Close Incident",
+    "operationId": "close_incident_api_v1_admin_incidents__incident_id__close_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "incident_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Incident Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IncidentOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/system/health": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "System Health",
+    "operationId": "system_health_api_v1_admin_system_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/v1/admin/agents": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Agents Catalogue",
+    "operationId": "agents_catalogue_api_v1_admin_agents_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "ops"
+    ],
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ready": {
+   "get": {
+    "tags": [
+     "ops"
+    ],
+    "summary": "Ready",
+    "operationId": "ready_ready_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AppointmentOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "station_id": {
+      "type": "string",
+      "title": "Station Id"
+     },
+     "station_code": {
+      "type": "string",
+      "title": "Station Code"
+     },
+     "vehicle_id": {
+      "type": "string",
+      "title": "Vehicle Id"
+     },
+     "plate": {
+      "type": "string",
+      "title": "Plate"
+     },
+     "shipment_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Shipment Id"
+     },
+     "slot_start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Slot Start"
+     },
+     "slot_end": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Slot End"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "priority": {
+      "type": "integer",
+      "title": "Priority"
+     },
+     "est_wait_s": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Est Wait S"
+     },
+     "assigned_by": {
+      "type": "string",
+      "title": "Assigned By"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "station_id",
+     "station_code",
+     "vehicle_id",
+     "plate",
+     "shipment_id",
+     "slot_start",
+     "slot_end",
+     "status",
+     "priority",
+     "est_wait_s",
+     "assigned_by"
+    ],
+    "title": "AppointmentOut"
+   },
+   "ApptStatusIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "pattern": "^(arrived|completed|missed|cancelled)$",
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "ApptStatusIn"
+   },
+   "AssignIn": {
+    "properties": {
+     "vehicle_id": {
+      "type": "string",
+      "title": "Vehicle Id"
+     },
+     "transporter_org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Org Id"
+     },
+     "driver_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Driver Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "vehicle_id"
+    ],
+    "title": "AssignIn"
+   },
+   "AuditOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "actor_user_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Actor User Id"
+     },
+     "action": {
+      "type": "string",
+      "title": "Action"
+     },
+     "entity": {
+      "type": "string",
+      "title": "Entity"
+     },
+     "entity_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Entity Id"
+     },
+     "before": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Before"
+     },
+     "after": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "After"
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "actor_user_id",
+     "action",
+     "entity",
+     "entity_id",
+     "before",
+     "after",
+     "at"
+    ],
+    "title": "AuditOut"
+   },
+   "AxleOut": {
+    "properties": {
+     "axle_index": {
+      "type": "integer",
+      "title": "Axle Index"
+     },
+     "load_kg": {
+      "type": "integer",
+      "title": "Load Kg"
+     },
+     "uncertainty_kg": {
+      "type": "integer",
+      "title": "Uncertainty Kg"
+     },
+     "spacing_to_next_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Spacing To Next M"
+     },
+     "group_no": {
+      "type": "integer",
+      "title": "Group No"
+     }
+    },
+    "type": "object",
+    "required": [
+     "axle_index",
+     "load_kg",
+     "uncertainty_kg",
+     "spacing_to_next_m",
+     "group_no"
+    ],
+    "title": "AxleOut"
+   },
+   "BookIn": {
+    "properties": {
+     "vehicle_id": {
+      "type": "string",
+      "title": "Vehicle Id"
+     },
+     "slot_start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Slot Start"
+     },
+     "shipment_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Shipment Id"
+     },
+     "priority": {
+      "type": "integer",
+      "maximum": 9.0,
+      "minimum": 1.0,
+      "title": "Priority",
+      "default": 5
+     }
+    },
+    "type": "object",
+    "required": [
+     "vehicle_id",
+     "slot_start"
+    ],
+    "title": "BookIn"
+   },
+   "CalibrationIn": {
+    "properties": {
+     "method": {
+      "type": "string",
+      "pattern": "^(reference_vehicle|static_scale_comparison|shunt|bench)$",
+      "title": "Method"
+     },
+     "reference_mass_kg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference Mass Kg"
+     },
+     "gain": {
+      "type": "number",
+      "title": "Gain",
+      "default": 1.0
+     },
+     "offset": {
+      "type": "number",
+      "title": "Offset",
+      "default": 0.0
+     },
+     "temp_coeff_per_c": {
+      "type": "number",
+      "title": "Temp Coeff Per C",
+      "default": 0.0
+     },
+     "reference_temp_c": {
+      "type": "number",
+      "title": "Reference Temp C",
+      "default": 25.0
+     },
+     "uncertainty_pct": {
+      "type": "number",
+      "maximum": 50.0,
+      "minimum": 0.1,
+      "title": "Uncertainty Pct",
+      "default": 5.0
+     },
+     "valid_days": {
+      "type": "integer",
+      "maximum": 730.0,
+      "minimum": 1.0,
+      "title": "Valid Days",
+      "default": 180
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "method"
+    ],
+    "title": "CalibrationIn"
+   },
+   "CalibrationOut": {
+    "properties": {
+     "method": {
+      "type": "string",
+      "pattern": "^(reference_vehicle|static_scale_comparison|shunt|bench)$",
+      "title": "Method"
+     },
+     "reference_mass_kg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reference Mass Kg"
+     },
+     "gain": {
+      "type": "number",
+      "title": "Gain",
+      "default": 1.0
+     },
+     "offset": {
+      "type": "number",
+      "title": "Offset",
+      "default": 0.0
+     },
+     "temp_coeff_per_c": {
+      "type": "number",
+      "title": "Temp Coeff Per C",
+      "default": 0.0
+     },
+     "reference_temp_c": {
+      "type": "number",
+      "title": "Reference Temp C",
+      "default": 25.0
+     },
+     "uncertainty_pct": {
+      "type": "number",
+      "maximum": 50.0,
+      "minimum": 0.1,
+      "title": "Uncertainty Pct",
+      "default": 5.0
+     },
+     "valid_days": {
+      "type": "integer",
+      "maximum": 730.0,
+      "minimum": 1.0,
+      "title": "Valid Days",
+      "default": 180
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "sensor_id": {
+      "type": "string",
+      "title": "Sensor Id"
+     },
+     "valid_from": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Valid From"
+     },
+     "valid_to": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Valid To"
+     }
+    },
+    "type": "object",
+    "required": [
+     "method",
+     "id",
+     "sensor_id",
+     "valid_from",
+     "valid_to"
+    ],
+    "title": "CalibrationOut"
+   },
+   "ContainerIn": {
+    "properties": {
+     "number": {
+      "type": "string",
+      "maxLength": 11,
+      "minLength": 11,
+      "title": "Number"
+     },
+     "size_ft": {
+      "type": "integer",
+      "maximum": 53.0,
+      "minimum": 10.0,
+      "title": "Size Ft",
+      "default": 40
+     },
+     "type": {
+      "type": "string",
+      "title": "Type",
+      "default": "GP"
+     }
+    },
+    "type": "object",
+    "required": [
+     "number"
+    ],
+    "title": "ContainerIn"
+   },
+   "DecisionIn": {
+    "properties": {
+     "accept": {
+      "type": "boolean",
+      "title": "Accept"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "required": [
+     "accept"
+    ],
+    "title": "DecisionIn"
+   },
+   "DecisionOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "decision": {
+      "type": "string",
+      "title": "Decision"
+     },
+     "rules_fired": {
+      "items": {},
+      "type": "array",
+      "title": "Rules Fired"
+     },
+     "margins": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Margins"
+     },
+     "limits_version": {
+      "type": "string",
+      "title": "Limits Version"
+     },
+     "engine_version": {
+      "type": "string",
+      "title": "Engine Version"
+     },
+     "audit_selected": {
+      "type": "boolean",
+      "title": "Audit Selected"
+     },
+     "evidence_hash": {
+      "type": "string",
+      "title": "Evidence Hash"
+     },
+     "decided_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Decided At"
+     },
+     "latency_ms": {
+      "type": "integer",
+      "title": "Latency Ms"
+     },
+     "explanation": {
+      "type": "string",
+      "title": "Explanation"
+     },
+     "static_verified_gvm_kg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Static Verified Gvm Kg"
+     },
+     "override_reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Override Reason"
+     },
+     "ticket_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Id"
+     },
+     "ticket_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Type"
+     },
+     "qr_token": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Qr Token"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "decision",
+     "rules_fired",
+     "margins",
+     "limits_version",
+     "engine_version",
+     "audit_selected",
+     "evidence_hash",
+     "decided_at",
+     "latency_ms",
+     "explanation",
+     "static_verified_gvm_kg",
+     "override_reason",
+     "ticket_id",
+     "ticket_type",
+     "qr_token"
+    ],
+    "title": "DecisionOut"
+   },
+   "DeliverIn": {
+    "properties": {
+     "receiver_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Receiver Name"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "title": "DeliverIn"
+   },
+   "DriverIn": {
+    "properties": {
+     "full_name": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Full Name"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "license_class": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 8
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "License Class"
+     },
+     "fleet_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fleet Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "full_name"
+    ],
+    "title": "DriverIn"
+   },
+   "DriverOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "org_id": {
+      "type": "string",
+      "title": "Org Id"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "license_class": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "License Class"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "org_id",
+     "full_name",
+     "license_class",
+     "status"
+    ],
+    "title": "DriverOut"
+   },
+   "EdgeIngestIn": {
+    "properties": {
+     "device_id": {
+      "type": "string",
+      "title": "Device Id"
+     },
+     "edge_event_id": {
+      "type": "string",
+      "maxLength": 26,
+      "minLength": 26,
+      "title": "Edge Event Id"
+     },
+     "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Occurred At"
+     },
+     "measurement": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Measurement"
+     },
+     "anpr_plate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anpr Plate"
+     },
+     "anpr_confidence": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anpr Confidence"
+     },
+     "rfid_epc": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rfid Epc"
+     },
+     "rfid_confidence": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rfid Confidence"
+     },
+     "raw_ref": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Raw Ref"
+     },
+     "ambient_temp_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ambient Temp C"
+     }
+    },
+    "type": "object",
+    "required": [
+     "device_id",
+     "edge_event_id",
+     "occurred_at",
+     "measurement"
+    ],
+    "title": "EdgeIngestIn",
+    "description": "Payload posted by a station gateway (or received over MQTT and forwarded by the ingest worker)."
+   },
+   "EnvReportOut": {
+    "properties": {
+     "period_hours": {
+      "type": "integer",
+      "title": "Period Hours"
+     },
+     "station_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Station Id"
+     },
+     "inputs": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Inputs"
+     },
+     "baseline": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Baseline"
+     },
+     "platform": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Platform"
+     },
+     "savings": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Savings"
+     },
+     "factors": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Factors"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "assumptions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     },
+     "agent_confidence": {
+      "type": "number",
+      "title": "Agent Confidence"
+     }
+    },
+    "type": "object",
+    "required": [
+     "period_hours",
+     "station_id",
+     "inputs",
+     "baseline",
+     "platform",
+     "savings",
+     "factors",
+     "label",
+     "assumptions",
+     "agent_confidence"
+    ],
+    "title": "EnvReportOut"
+   },
+   "FleetIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 2,
+      "title": "Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "FleetIn"
+   },
+   "FleetOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 2,
+      "title": "Name"
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "org_id": {
+      "type": "string",
+      "title": "Org Id"
+     },
+     "vehicle_count": {
+      "type": "integer",
+      "title": "Vehicle Count"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "id",
+     "org_id",
+     "vehicle_count"
+    ],
+    "title": "FleetOut"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "IdentityOut": {
+    "properties": {
+     "anpr_plate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anpr Plate"
+     },
+     "anpr_confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anpr Confidence"
+     },
+     "rfid_epc": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rfid Epc"
+     },
+     "rfid_confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rfid Confidence"
+     },
+     "confidence": {
+      "type": "number",
+      "title": "Confidence"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method"
+     },
+     "explanation": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Explanation"
+     }
+    },
+    "type": "object",
+    "required": [
+     "anpr_plate",
+     "anpr_confidence",
+     "rfid_epc",
+     "rfid_confidence",
+     "confidence",
+     "method",
+     "explanation"
+    ],
+    "title": "IdentityOut"
+   },
+   "IncidentIn": {
+    "properties": {
+     "station_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Station Id"
+     },
+     "severity": {
+      "type": "string",
+      "pattern": "^(low|medium|high|critical)$",
+      "title": "Severity",
+      "default": "medium"
+     },
+     "category": {
+      "type": "string",
+      "pattern": "^(station_failure|sensor_fault|security|traffic|cargo_anomaly|other)$",
+      "title": "Category"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details",
+      "default": {}
+     }
+    },
+    "type": "object",
+    "required": [
+     "category",
+     "title"
+    ],
+    "title": "IncidentIn"
+   },
+   "IncidentOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "station_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Station Id"
+     },
+     "severity": {
+      "type": "string",
+      "title": "Severity"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "opened_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Opened At"
+     },
+     "closed_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closed At"
+     },
+     "raised_by": {
+      "type": "string",
+      "title": "Raised By"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "station_id",
+     "severity",
+     "category",
+     "title",
+     "details",
+     "status",
+     "opened_at",
+     "closed_at",
+     "raised_by"
+    ],
+    "title": "IncidentOut"
+   },
+   "IntegrationOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "mode": {
+      "type": "string",
+      "title": "Mode"
+     },
+     "contract": {
+      "type": "string",
+      "title": "Contract"
+     },
+     "base_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Base Url"
+     },
+     "health_status": {
+      "type": "string",
+      "title": "Health Status"
+     },
+     "last_ok_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Ok At"
+     },
+     "last_error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Error"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "display_name",
+     "mode",
+     "contract",
+     "base_url",
+     "health_status",
+     "last_ok_at",
+     "last_error"
+    ],
+    "title": "IntegrationOut"
+   },
+   "LaneIn": {
+    "properties": {
+     "lane_no": {
+      "type": "integer",
+      "maximum": 20.0,
+      "minimum": 1.0,
+      "title": "Lane No"
+     },
+     "type": {
+      "type": "string",
+      "pattern": "^(wim_highspeed|wim_lowspeed|static)$",
+      "title": "Type",
+      "default": "wim_highspeed"
+     },
+     "direction": {
+      "type": "string",
+      "title": "Direction",
+      "default": "inbound"
+     },
+     "device_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Device Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "lane_no"
+    ],
+    "title": "LaneIn"
+   },
+   "LaneOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "lane_no": {
+      "type": "integer",
+      "title": "Lane No"
+     },
+     "type": {
+      "type": "string",
+      "title": "Type"
+     },
+     "direction": {
+      "type": "string",
+      "title": "Direction"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "device_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Device Id"
+     },
+     "calibration_valid_to": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Calibration Valid To"
+     },
+     "sensors": {
+      "items": {
+       "$ref": "#/components/schemas/SensorOut"
+      },
+      "type": "array",
+      "title": "Sensors"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "lane_no",
+     "type",
+     "direction",
+     "status",
+     "device_id",
+     "calibration_valid_to",
+     "sensors"
+    ],
+    "title": "LaneOut"
+   },
+   "LedgerOut": {
+    "properties": {
+     "event_id": {
+      "type": "string",
+      "title": "Event Id"
+     },
+     "seq": {
+      "type": "integer",
+      "title": "Seq"
+     },
+     "type": {
+      "type": "string",
+      "title": "Type"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload"
+     },
+     "station_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Station Id"
+     },
+     "producer": {
+      "type": "string",
+      "title": "Producer"
+     },
+     "prev_hash": {
+      "type": "string",
+      "title": "Prev Hash"
+     },
+     "hash": {
+      "type": "string",
+      "title": "Hash"
+     },
+     "signature": {
+      "type": "string",
+      "title": "Signature"
+     },
+     "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Occurred At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "event_id",
+     "seq",
+     "type",
+     "payload",
+     "station_id",
+     "producer",
+     "prev_hash",
+     "hash",
+     "signature",
+     "occurred_at"
+    ],
+    "title": "LedgerOut"
+   },
+   "LoginIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "maxLength": 254,
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "title": "Password"
+     },
+     "totp_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Totp Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password"
+    ],
+    "title": "LoginIn"
+   },
+   "LookupOut": {
+    "properties": {
+     "integration": {
+      "type": "string",
+      "title": "Integration"
+     },
+     "mode": {
+      "type": "string",
+      "title": "Mode"
+     },
+     "data": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Data"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     }
+    },
+    "type": "object",
+    "required": [
+     "integration",
+     "mode",
+     "data",
+     "label"
+    ],
+    "title": "LookupOut"
+   },
+   "MatchOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "offer_id": {
+      "type": "string",
+      "title": "Offer Id"
+     },
+     "vehicle_id": {
+      "type": "string",
+      "title": "Vehicle Id"
+     },
+     "plate": {
+      "type": "string",
+      "title": "Plate"
+     },
+     "transporter_org_id": {
+      "type": "string",
+      "title": "Transporter Org Id"
+     },
+     "transporter_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Name"
+     },
+     "score": {
+      "type": "number",
+      "title": "Score"
+     },
+     "extra_km": {
+      "type": "number",
+      "title": "Extra Km"
+     },
+     "fuel_litres": {
+      "type": "number",
+      "title": "Fuel Litres"
+     },
+     "fuel_cost_kes": {
+      "type": "number",
+      "title": "Fuel Cost Kes"
+     },
+     "revenue_kes": {
+      "type": "number",
+      "title": "Revenue Kes"
+     },
+     "co2_avoided_kg": {
+      "type": "number",
+      "title": "Co2 Avoided Kg"
+     },
+     "explanation": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Explanation"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "transporter_decided_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Decided At"
+     },
+     "owner_decided_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Owner Decided At"
+     },
+     "assigned_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Assigned At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "offer_id",
+     "vehicle_id",
+     "plate",
+     "transporter_org_id",
+     "transporter_name",
+     "score",
+     "extra_km",
+     "fuel_litres",
+     "fuel_cost_kes",
+     "revenue_kes",
+     "co2_avoided_kg",
+     "explanation",
+     "status",
+     "transporter_decided_at",
+     "owner_decided_at",
+     "assigned_at"
+    ],
+    "title": "MatchOut"
+   },
+   "MeOut": {
+    "properties": {
+     "user_id": {
+      "type": "string",
+      "title": "User Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Roles"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     },
+     "org_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Name"
+     },
+     "org_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Type"
+     },
+     "mfa_enabled": {
+      "type": "boolean",
+      "title": "Mfa Enabled"
+     },
+     "mfa_verified": {
+      "type": "boolean",
+      "title": "Mfa Verified"
+     }
+    },
+    "type": "object",
+    "required": [
+     "user_id",
+     "email",
+     "full_name",
+     "roles",
+     "org_id",
+     "org_name",
+     "org_type",
+     "mfa_enabled",
+     "mfa_verified"
+    ],
+    "title": "MeOut"
+   },
+   "MfaCodeIn": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "maxLength": 8,
+      "minLength": 6,
+      "title": "Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code"
+    ],
+    "title": "MfaCodeIn"
+   },
+   "MfaSetupOut": {
+    "properties": {
+     "secret": {
+      "type": "string",
+      "title": "Secret"
+     },
+     "otpauth_uri": {
+      "type": "string",
+      "title": "Otpauth Uri"
+     }
+    },
+    "type": "object",
+    "required": [
+     "secret",
+     "otpauth_uri"
+    ],
+    "title": "MfaSetupOut"
+   },
+   "ModeIn": {
+    "properties": {
+     "mode": {
+      "type": "string",
+      "pattern": "^(mock|real)$",
+      "title": "Mode"
+     },
+     "base_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Base Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "mode"
+    ],
+    "title": "ModeIn"
+   },
+   "NotificationOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "channel": {
+      "type": "string",
+      "title": "Channel"
+     },
+     "template": {
+      "type": "string",
+      "title": "Template"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "body": {
+      "type": "string",
+      "title": "Body"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "read_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Read At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "channel",
+     "template",
+     "title",
+     "body",
+     "payload",
+     "status",
+     "created_at",
+     "read_at"
+    ],
+    "title": "NotificationOut"
+   },
+   "ObservationIn": {
+    "properties": {
+     "queue_len": {
+      "type": "integer",
+      "maximum": 2000.0,
+      "minimum": 0.0,
+      "title": "Queue Len"
+     },
+     "avg_wait_s": {
+      "type": "integer",
+      "maximum": 86400.0,
+      "minimum": 0.0,
+      "title": "Avg Wait S"
+     },
+     "arrivals_per_hour": {
+      "type": "number",
+      "maximum": 2000.0,
+      "minimum": 0.0,
+      "title": "Arrivals Per Hour"
+     },
+     "source": {
+      "type": "string",
+      "pattern": "^(live|simulated|replay)$",
+      "title": "Source",
+      "default": "simulated"
+     }
+    },
+    "type": "object",
+    "required": [
+     "queue_len",
+     "avg_wait_s",
+     "arrivals_per_hour"
+    ],
+    "title": "ObservationIn"
+   },
+   "OfferIn": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 160,
+      "minLength": 3,
+      "title": "Title"
+     },
+     "cargo_type": {
+      "type": "string",
+      "pattern": "^(general|container|bulk|liquid|reefer|hazardous)$",
+      "title": "Cargo Type",
+      "default": "general"
+     },
+     "mass_kg": {
+      "type": "integer",
+      "maximum": 45000.0,
+      "minimum": 100.0,
+      "title": "Mass Kg"
+     },
+     "volume_m3": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume M3"
+     },
+     "length_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Length M"
+     },
+     "requires_body_types": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Requires Body Types",
+      "default": []
+     },
+     "origin": {
+      "type": "string",
+      "title": "Origin"
+     },
+     "origin_lat": {
+      "type": "number",
+      "title": "Origin Lat"
+     },
+     "origin_lon": {
+      "type": "number",
+      "title": "Origin Lon"
+     },
+     "destination": {
+      "type": "string",
+      "title": "Destination"
+     },
+     "dest_lat": {
+      "type": "number",
+      "title": "Dest Lat"
+     },
+     "dest_lon": {
+      "type": "number",
+      "title": "Dest Lon"
+     },
+     "ready_from": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Ready From"
+     },
+     "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Deadline"
+     },
+     "offered_price_kes": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Offered Price Kes"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "title",
+     "mass_kg",
+     "origin",
+     "origin_lat",
+     "origin_lon",
+     "destination",
+     "dest_lat",
+     "dest_lon",
+     "ready_from",
+     "deadline",
+     "offered_price_kes"
+    ],
+    "title": "OfferIn"
+   },
+   "OfferOut": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 160,
+      "minLength": 3,
+      "title": "Title"
+     },
+     "cargo_type": {
+      "type": "string",
+      "pattern": "^(general|container|bulk|liquid|reefer|hazardous)$",
+      "title": "Cargo Type",
+      "default": "general"
+     },
+     "mass_kg": {
+      "type": "integer",
+      "maximum": 45000.0,
+      "minimum": 100.0,
+      "title": "Mass Kg"
+     },
+     "volume_m3": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume M3"
+     },
+     "length_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Length M"
+     },
+     "requires_body_types": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Requires Body Types",
+      "default": []
+     },
+     "origin": {
+      "type": "string",
+      "title": "Origin"
+     },
+     "origin_lat": {
+      "type": "number",
+      "title": "Origin Lat"
+     },
+     "origin_lon": {
+      "type": "number",
+      "title": "Origin Lon"
+     },
+     "destination": {
+      "type": "string",
+      "title": "Destination"
+     },
+     "dest_lat": {
+      "type": "number",
+      "title": "Dest Lat"
+     },
+     "dest_lon": {
+      "type": "number",
+      "title": "Dest Lon"
+     },
+     "ready_from": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Ready From"
+     },
+     "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Deadline"
+     },
+     "offered_price_kes": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Offered Price Kes"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "cargo_owner_org_id": {
+      "type": "string",
+      "title": "Cargo Owner Org Id"
+     },
+     "cargo_owner_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cargo Owner Name"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "matches": {
+      "items": {
+       "$ref": "#/components/schemas/MatchOut"
+      },
+      "type": "array",
+      "title": "Matches"
+     }
+    },
+    "type": "object",
+    "required": [
+     "title",
+     "mass_kg",
+     "origin",
+     "origin_lat",
+     "origin_lon",
+     "destination",
+     "dest_lat",
+     "dest_lon",
+     "ready_from",
+     "deadline",
+     "offered_price_kes",
+     "id",
+     "cargo_owner_org_id",
+     "cargo_owner_name",
+     "status",
+     "created_at",
+     "matches"
+    ],
+    "title": "OfferOut"
+   },
+   "OrgOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "type": {
+      "type": "string",
+      "title": "Type"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "type",
+     "status"
+    ],
+    "title": "OrgOut"
+   },
+   "OverrideIn": {
+    "properties": {
+     "reason": {
+      "type": "string",
+      "maxLength": 300,
+      "minLength": 10,
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "required": [
+     "reason"
+    ],
+    "title": "OverrideIn"
+   },
+   "PassportOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "reference": {
+      "type": "string",
+      "title": "Reference"
+     },
+     "owner_org_id": {
+      "type": "string",
+      "title": "Owner Org Id"
+     },
+     "owner_org_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Owner Org Name"
+     },
+     "transporter_org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Org Id"
+     },
+     "transporter_org_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Org Name"
+     },
+     "vehicle_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vehicle Id"
+     },
+     "vehicle_plate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vehicle Plate"
+     },
+     "vehicle_rfid": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Vehicle Rfid"
+     },
+     "trailer_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Trailer Id"
+     },
+     "warehouse_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Warehouse Id"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "cargo_type": {
+      "type": "string",
+      "title": "Cargo Type"
+     },
+     "origin": {
+      "type": "string",
+      "title": "Origin"
+     },
+     "destination": {
+      "type": "string",
+      "title": "Destination"
+     },
+     "origin_lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Lat"
+     },
+     "origin_lon": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Lon"
+     },
+     "dest_lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dest Lat"
+     },
+     "dest_lon": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dest Lon"
+     },
+     "declared_mass_kg": {
+      "type": "integer",
+      "title": "Declared Mass Kg"
+     },
+     "vgm_kg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vgm Kg"
+     },
+     "stage": {
+      "type": "string",
+      "title": "Stage"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "containers": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Containers"
+     },
+     "declaration": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declaration"
+     },
+     "seals": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Seals"
+     },
+     "processing_events": {
+      "items": {
+       "$ref": "#/components/schemas/ProcessingEventOut"
+      },
+      "type": "array",
+      "title": "Processing Events"
+     },
+     "weighings": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Weighings"
+     },
+     "tickets": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Tickets"
+     },
+     "predicted_release_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Predicted Release At"
+     },
+     "predicted_release_p10": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Predicted Release P10"
+     },
+     "predicted_release_p90": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Predicted Release P90"
+     },
+     "prediction_explanation": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prediction Explanation"
+     },
+     "outstanding": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Outstanding"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "reference",
+     "owner_org_id",
+     "owner_org_name",
+     "transporter_org_id",
+     "transporter_org_name",
+     "vehicle_id",
+     "vehicle_plate",
+     "vehicle_rfid",
+     "trailer_id",
+     "warehouse_id",
+     "description",
+     "cargo_type",
+     "origin",
+     "destination",
+     "origin_lat",
+     "origin_lon",
+     "dest_lat",
+     "dest_lon",
+     "declared_mass_kg",
+     "vgm_kg",
+     "stage",
+     "status",
+     "containers",
+     "declaration",
+     "seals",
+     "processing_events",
+     "weighings",
+     "tickets",
+     "predicted_release_at",
+     "predicted_release_p10",
+     "predicted_release_p90",
+     "prediction_explanation",
+     "outstanding",
+     "created_at"
+    ],
+    "title": "PassportOut"
+   },
+   "PositionIn": {
+    "properties": {
+     "lat": {
+      "type": "number",
+      "maximum": 90.0,
+      "minimum": -90.0,
+      "title": "Lat"
+     },
+     "lon": {
+      "type": "number",
+      "maximum": 180.0,
+      "minimum": -180.0,
+      "title": "Lon"
+     }
+    },
+    "type": "object",
+    "required": [
+     "lat",
+     "lon"
+    ],
+    "title": "PositionIn"
+   },
+   "ProcessingEventOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "stage": {
+      "type": "string",
+      "title": "Stage"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Occurred At"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "stage",
+     "status",
+     "occurred_at",
+     "source",
+     "notes"
+    ],
+    "title": "ProcessingEventOut"
+   },
+   "QueueOut": {
+    "properties": {
+     "station_id": {
+      "type": "string",
+      "title": "Station Id"
+     },
+     "ts": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Ts"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "queue_len": {
+      "type": "integer",
+      "title": "Queue Len"
+     },
+     "avg_wait_s": {
+      "type": "integer",
+      "title": "Avg Wait S"
+     },
+     "utilisation": {
+      "type": "number",
+      "title": "Utilisation"
+     },
+     "arrivals_per_hour": {
+      "type": "number",
+      "title": "Arrivals Per Hour"
+     },
+     "lower": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lower"
+     },
+     "upper": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Upper"
+     },
+     "model_version": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Model Version"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "station_id",
+     "ts",
+     "kind",
+     "queue_len",
+     "avg_wait_s",
+     "utilisation",
+     "arrivals_per_hour",
+     "lower",
+     "upper",
+     "model_version",
+     "source"
+    ],
+    "title": "QueueOut"
+   },
+   "ReadinessIn": {
+    "properties": {
+     "readiness_status": {
+      "type": "string",
+      "pattern": "^(ready|busy|closed)$",
+      "title": "Readiness Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "readiness_status"
+    ],
+    "title": "ReadinessIn"
+   },
+   "RefreshIn": {
+    "properties": {
+     "refresh_token": {
+      "type": "string",
+      "title": "Refresh Token"
+     }
+    },
+    "type": "object",
+    "required": [
+     "refresh_token"
+    ],
+    "title": "RefreshIn"
+   },
+   "RegisterIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "maxLength": 254,
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 10,
+      "title": "Password"
+     },
+     "full_name": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 2,
+      "title": "Full Name"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "org_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Name"
+     },
+     "org_type": {
+      "type": "string",
+      "pattern": "^(transporter|cargo_owner|warehouse)$",
+      "title": "Org Type",
+      "default": "cargo_owner"
+     },
+     "role": {
+      "type": "string",
+      "pattern": "^(transporter_admin|cargo_owner|warehouse_manager|driver|dispatcher)$",
+      "title": "Role",
+      "default": "cargo_owner"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password",
+     "full_name"
+    ],
+    "title": "RegisterIn"
+   },
+   "SealIn": {
+    "properties": {
+     "seal_id": {
+      "type": "string",
+      "title": "Seal Id"
+     },
+     "status": {
+      "type": "string",
+      "pattern": "^(armed|breached|removed|unknown)$",
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "seal_id",
+     "status"
+    ],
+    "title": "SealIn"
+   },
+   "SendIn": {
+    "properties": {
+     "user_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "User Id"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     },
+     "template": {
+      "type": "string",
+      "pattern": "^(slot_assigned|clearance|cargo_stage|backhaul|delivered|custom)$",
+      "title": "Template"
+     },
+     "title": {
+      "type": "string",
+      "maxLength": 160,
+      "title": "Title"
+     },
+     "body": {
+      "type": "string",
+      "maxLength": 1000,
+      "title": "Body"
+     },
+     "channels": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Channels",
+      "default": [
+       "ws"
+      ]
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload",
+      "default": {}
+     }
+    },
+    "type": "object",
+    "required": [
+     "template",
+     "title",
+     "body"
+    ],
+    "title": "SendIn"
+   },
+   "SensorHealthIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "pattern": "^(ok|degraded|fault)$",
+      "title": "Status"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "SensorHealthIn"
+   },
+   "SensorOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "serial": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Serial"
+     },
+     "channel": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Channel"
+     },
+     "install_position_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Install Position M"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "health_reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Health Reason"
+     },
+     "last_reading_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Reading At"
+     },
+     "calibration_valid_to": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Calibration Valid To"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "kind",
+     "serial",
+     "channel",
+     "install_position_m",
+     "status",
+     "health_reason",
+     "last_reading_at",
+     "calibration_valid_to"
+    ],
+    "title": "SensorOut"
+   },
+   "ShipmentIn": {
+    "properties": {
+     "description": {
+      "type": "string",
+      "maxLength": 300,
+      "minLength": 3,
+      "title": "Description"
+     },
+     "cargo_type": {
+      "type": "string",
+      "pattern": "^(general|container|bulk|liquid|reefer|hazardous)$",
+      "title": "Cargo Type",
+      "default": "general"
+     },
+     "origin": {
+      "type": "string",
+      "title": "Origin"
+     },
+     "destination": {
+      "type": "string",
+      "title": "Destination"
+     },
+     "origin_lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Lat"
+     },
+     "origin_lon": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Lon"
+     },
+     "dest_lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dest Lat"
+     },
+     "dest_lon": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dest Lon"
+     },
+     "declared_mass_kg": {
+      "type": "integer",
+      "maximum": 60000.0,
+      "minimum": 0.0,
+      "title": "Declared Mass Kg"
+     },
+     "vgm_kg": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 60000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vgm Kg"
+     },
+     "transporter_org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Transporter Org Id"
+     },
+     "vehicle_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vehicle Id"
+     },
+     "warehouse_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Warehouse Id"
+     },
+     "containers": {
+      "items": {
+       "$ref": "#/components/schemas/ContainerIn"
+      },
+      "type": "array",
+      "title": "Containers",
+      "default": []
+     },
+     "declaration_reference": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declaration Reference"
+     },
+     "seal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seal Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "description",
+     "origin",
+     "destination",
+     "declared_mass_kg"
+    ],
+    "title": "ShipmentIn"
+   },
+   "SimulateIn": {
+    "properties": {
+     "lane_id": {
+      "type": "string",
+      "title": "Lane Id"
+     },
+     "count": {
+      "type": "integer",
+      "maximum": 50.0,
+      "minimum": 1.0,
+      "title": "Count",
+      "default": 1
+     },
+     "overload_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Overload Prob",
+      "default": 0.15
+     },
+     "sensor_fault_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Sensor Fault Prob",
+      "default": 0.03
+     },
+     "anpr_misread_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Anpr Misread Prob",
+      "default": 0.05
+     },
+     "rfid_missing_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Rfid Missing Prob",
+      "default": 0.1
+     },
+     "clone_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Clone Prob",
+      "default": 0.01
+     },
+     "unregistered_prob": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Unregistered Prob",
+      "default": 0.05
+     },
+     "pavement_temp_c": {
+      "type": "number",
+      "maximum": 80.0,
+      "minimum": -10.0,
+      "title": "Pavement Temp C",
+      "default": 32.0
+     },
+     "vehicle_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vehicle Id"
+     },
+     "force_gvm_kg": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 90000.0,
+        "minimum": 1000.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Force Gvm Kg"
+     },
+     "seed": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seed"
+     }
+    },
+    "type": "object",
+    "required": [
+     "lane_id"
+    ],
+    "title": "SimulateIn"
+   },
+   "SlotOut": {
+    "properties": {
+     "slot_start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Slot Start"
+     },
+     "slot_end": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Slot End"
+     },
+     "capacity": {
+      "type": "integer",
+      "title": "Capacity"
+     },
+     "booked": {
+      "type": "integer",
+      "title": "Booked"
+     },
+     "available": {
+      "type": "integer",
+      "title": "Available"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slot_start",
+     "slot_end",
+     "capacity",
+     "booked",
+     "available"
+    ],
+    "title": "SlotOut"
+   },
+   "StageIn": {
+    "properties": {
+     "stage": {
+      "type": "string",
+      "title": "Stage"
+     },
+     "status": {
+      "type": "string",
+      "pattern": "^(started|completed|blocked)$",
+      "title": "Status",
+      "default": "completed"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "stage"
+    ],
+    "title": "StageIn"
+   },
+   "StaticVerifyIn": {
+    "properties": {
+     "static_gvm_kg": {
+      "type": "integer",
+      "maximum": 90000.0,
+      "minimum": 500.0,
+      "title": "Static Gvm Kg"
+     },
+     "axle_loads_kg": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Axle Loads Kg"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "static_gvm_kg"
+    ],
+    "title": "StaticVerifyIn"
+   },
+   "StationIn": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "maxLength": 16,
+      "minLength": 2,
+      "title": "Code"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon"
+     },
+     "capacity_per_hour": {
+      "type": "integer",
+      "title": "Capacity Per Hour",
+      "default": 120
+     },
+     "static_capacity_per_hour": {
+      "type": "integer",
+      "title": "Static Capacity Per Hour",
+      "default": 40
+     },
+     "alt_allowed": {
+      "type": "boolean",
+      "title": "Alt Allowed",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "lat",
+     "lon"
+    ],
+    "title": "StationIn"
+   },
+   "StationOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon"
+     },
+     "capacity_per_hour": {
+      "type": "integer",
+      "title": "Capacity Per Hour"
+     },
+     "static_capacity_per_hour": {
+      "type": "integer",
+      "title": "Static Capacity Per Hour"
+     },
+     "alt_allowed": {
+      "type": "boolean",
+      "title": "Alt Allowed"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "lanes": {
+      "items": {
+       "$ref": "#/components/schemas/LaneOut"
+      },
+      "type": "array",
+      "title": "Lanes"
+     },
+     "queue_len": {
+      "type": "integer",
+      "title": "Queue Len"
+     },
+     "avg_wait_s": {
+      "type": "integer",
+      "title": "Avg Wait S"
+     },
+     "utilisation": {
+      "type": "number",
+      "title": "Utilisation"
+     },
+     "decisions_last_hour": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Decisions Last Hour"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "code",
+     "name",
+     "lat",
+     "lon",
+     "capacity_per_hour",
+     "static_capacity_per_hour",
+     "alt_allowed",
+     "status",
+     "lanes",
+     "queue_len",
+     "avg_wait_s",
+     "utilisation",
+     "decisions_last_hour"
+    ],
+    "title": "StationOut"
+   },
+   "StationStatusIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "pattern": "^(operational|degraded|offline)$",
+      "title": "Status"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "StationStatusIn"
+   },
+   "StatsOut": {
+    "properties": {
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "by_decision": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "By Decision"
+     },
+     "by_source": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "By Source"
+     },
+     "mean_latency_ms": {
+      "type": "number",
+      "title": "Mean Latency Ms"
+     },
+     "green_rate": {
+      "type": "number",
+      "title": "Green Rate"
+     },
+     "stops_avoided": {
+      "type": "integer",
+      "title": "Stops Avoided"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total",
+     "by_decision",
+     "by_source",
+     "mean_latency_ms",
+     "green_rate",
+     "stops_avoided"
+    ],
+    "title": "StatsOut"
+   },
+   "TicketOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "type": {
+      "type": "string",
+      "title": "Type"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload"
+     },
+     "signature": {
+      "type": "string",
+      "title": "Signature"
+     },
+     "signer_key_id": {
+      "type": "string",
+      "title": "Signer Key Id"
+     },
+     "qr_token": {
+      "type": "string",
+      "title": "Qr Token"
+     },
+     "signature_valid": {
+      "type": "boolean",
+      "title": "Signature Valid"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "type",
+     "payload",
+     "signature",
+     "signer_key_id",
+     "qr_token",
+     "signature_valid"
+    ],
+    "title": "TicketOut"
+   },
+   "TokenOut": {
+    "properties": {
+     "access_token": {
+      "type": "string",
+      "title": "Access Token"
+     },
+     "refresh_token": {
+      "type": "string",
+      "title": "Refresh Token"
+     },
+     "token_type": {
+      "type": "string",
+      "title": "Token Type",
+      "default": "bearer"
+     },
+     "expires_in": {
+      "type": "integer",
+      "title": "Expires In"
+     },
+     "mfa_required": {
+      "type": "boolean",
+      "title": "Mfa Required",
+      "default": false
+     },
+     "roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Roles"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     },
+     "user_id": {
+      "type": "string",
+      "title": "User Id"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "access_token",
+     "refresh_token",
+     "expires_in",
+     "roles",
+     "org_id",
+     "user_id",
+     "full_name"
+    ],
+    "title": "TokenOut"
+   },
+   "TrailerIn": {
+    "properties": {
+     "plate": {
+      "type": "string",
+      "maxLength": 16,
+      "minLength": 4,
+      "title": "Plate"
+     },
+     "axle_config": {
+      "type": "string",
+      "pattern": "^\\d(\\+\\d)*$",
+      "title": "Axle Config",
+      "default": "2"
+     },
+     "tare_kg": {
+      "type": "integer",
+      "maximum": 20000.0,
+      "minimum": 500.0,
+      "title": "Tare Kg"
+     }
+    },
+    "type": "object",
+    "required": [
+     "plate",
+     "tare_kg"
+    ],
+    "title": "TrailerIn"
+   },
+   "TrailerOut": {
+    "properties": {
+     "plate": {
+      "type": "string",
+      "maxLength": 16,
+      "minLength": 4,
+      "title": "Plate"
+     },
+     "axle_config": {
+      "type": "string",
+      "pattern": "^\\d(\\+\\d)*$",
+      "title": "Axle Config",
+      "default": "2"
+     },
+     "tare_kg": {
+      "type": "integer",
+      "maximum": 20000.0,
+      "minimum": 500.0,
+      "title": "Tare Kg"
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "org_id": {
+      "type": "string",
+      "title": "Org Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "plate",
+     "tare_kg",
+     "id",
+     "org_id",
+     "status"
+    ],
+    "title": "TrailerOut"
+   },
+   "UserIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "maxLength": 254,
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "minLength": 10,
+      "title": "Password"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     },
+     "roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Roles"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password",
+     "full_name",
+     "roles"
+    ],
+    "title": "UserIn"
+   },
+   "UserOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     },
+     "org_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Name"
+     },
+     "roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Roles"
+     },
+     "is_active": {
+      "type": "boolean",
+      "title": "Is Active"
+     },
+     "mfa_enabled": {
+      "type": "boolean",
+      "title": "Mfa Enabled"
+     },
+     "last_login_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Login At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "email",
+     "full_name",
+     "org_id",
+     "org_name",
+     "roles",
+     "is_active",
+     "mfa_enabled",
+     "last_login_at"
+    ],
+    "title": "UserOut"
+   },
+   "UserPatch": {
+    "properties": {
+     "roles": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Roles"
+     },
+     "is_active": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Is Active"
+     },
+     "org_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Org Id"
+     }
+    },
+    "type": "object",
+    "title": "UserPatch"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "VehicleIn": {
+    "properties": {
+     "plate": {
+      "type": "string",
+      "maxLength": 16,
+      "minLength": 5,
+      "title": "Plate"
+     },
+     "fleet_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fleet Id"
+     },
+     "make": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Make"
+     },
+     "model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Model"
+     },
+     "axle_config": {
+      "type": "string",
+      "pattern": "^\\d(\\+\\d)*$",
+      "title": "Axle Config",
+      "default": "1+1"
+     },
+     "tare_kg": {
+      "type": "integer",
+      "maximum": 30000.0,
+      "minimum": 1000.0,
+      "title": "Tare Kg"
+     },
+     "max_gvm_kg": {
+      "type": "integer",
+      "maximum": 56000.0,
+      "minimum": 3500.0,
+      "title": "Max Gvm Kg",
+      "default": 56000
+     },
+     "payload_capacity_kg": {
+      "type": "integer",
+      "maximum": 50000.0,
+      "minimum": 0.0,
+      "title": "Payload Capacity Kg",
+      "default": 28000
+     },
+     "body_type": {
+      "type": "string",
+      "pattern": "^(flatbed|container|tanker|box|tipper|reefer)$",
+      "title": "Body Type",
+      "default": "flatbed"
+     },
+     "rfid_epc": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rfid Epc"
+     }
+    },
+    "type": "object",
+    "required": [
+     "plate",
+     "tare_kg"
+    ],
+    "title": "VehicleIn"
+   },
+   "VehicleOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "org_id": {
+      "type": "string",
+      "title": "Org Id"
+     },
+     "fleet_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fleet Id"
+     },
+     "plate": {
+      "type": "string",
+      "title": "Plate"
+     },
+     "make": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Make"
+     },
+     "model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Model"
+     },
+     "axle_config": {
+      "type": "string",
+      "title": "Axle Config"
+     },
+     "class_code": {
+      "type": "string",
+      "title": "Class Code"
+     },
+     "tare_kg": {
+      "type": "integer",
+      "title": "Tare Kg"
+     },
+     "max_gvm_kg": {
+      "type": "integer",
+      "title": "Max Gvm Kg"
+     },
+     "payload_capacity_kg": {
+      "type": "integer",
+      "title": "Payload Capacity Kg"
+     },
+     "body_type": {
+      "type": "string",
+      "title": "Body Type"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "rfid_epcs": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Rfid Epcs"
+     },
+     "last_lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Lat"
+     },
+     "last_lon": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Lon"
+     },
+     "last_seen_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Seen At"
+     },
+     "watchlisted": {
+      "type": "boolean",
+      "title": "Watchlisted"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "org_id",
+     "fleet_id",
+     "plate",
+     "make",
+     "model",
+     "axle_config",
+     "class_code",
+     "tare_kg",
+     "max_gvm_kg",
+     "payload_capacity_kg",
+     "body_type",
+     "status",
+     "rfid_epcs",
+     "last_lat",
+     "last_lon",
+     "last_seen_at",
+     "watchlisted"
+    ],
+    "title": "VehicleOut"
+   },
+   "VerifyOut": {
+    "properties": {
+     "valid": {
+      "type": "boolean",
+      "title": "Valid"
+     },
+     "ticket_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ticket Type"
+     },
+     "legal_status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Legal Status"
+     },
+     "plate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plate"
+     },
+     "gvm_kg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Gvm Kg"
+     },
+     "decision": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decision"
+     },
+     "occurred_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Occurred At"
+     },
+     "station": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Station"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     },
+     "evidence_hash": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidence Hash"
+     }
+    },
+    "type": "object",
+    "required": [
+     "valid"
+    ],
+    "title": "VerifyOut"
+   },
+   "WarehouseIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon"
+     },
+     "dock_count": {
+      "type": "integer",
+      "title": "Dock Count",
+      "default": 2
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "lat",
+     "lon"
+    ],
+    "title": "WarehouseIn"
+   },
+   "WarehouseOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon"
+     },
+     "dock_count": {
+      "type": "integer",
+      "title": "Dock Count",
+      "default": 2
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "org_id": {
+      "type": "string",
+      "title": "Org Id"
+     },
+     "readiness_status": {
+      "type": "string",
+      "title": "Readiness Status"
+     },
+     "incoming": {
+      "type": "integer",
+      "title": "Incoming"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "lat",
+     "lon",
+     "id",
+     "org_id",
+     "readiness_status",
+     "incoming"
+    ],
+    "title": "WarehouseOut"
+   },
+   "WatchlistIn": {
+    "properties": {
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "title": "WatchlistIn"
+   },
+   "WeighingOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "station_id": {
+      "type": "string",
+      "title": "Station Id"
+     },
+     "lane_id": {
+      "type": "string",
+      "title": "Lane Id"
+     },
+     "vehicle_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vehicle Id"
+     },
+     "plate": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Plate"
+     },
+     "shipment_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Shipment Id"
+     },
+     "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Occurred At"
+     },
+     "speed_mps": {
+      "type": "number",
+      "title": "Speed Mps"
+     },
+     "gvm_kg": {
+      "type": "integer",
+      "title": "Gvm Kg"
+     },
+     "gvm_uncertainty_kg": {
+      "type": "integer",
+      "title": "Gvm Uncertainty Kg"
+     },
+     "axle_count": {
+      "type": "integer",
+      "title": "Axle Count"
+     },
+     "detected_axle_config": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detected Axle Config"
+     },
+     "class_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Class Code"
+     },
+     "quality_flags": {
+      "items": {},
+      "type": "array",
+      "title": "Quality Flags"
+     },
+     "sensor_health": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Sensor Health"
+     },
+     "pavement_temp_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pavement Temp C"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "axles": {
+      "items": {
+       "$ref": "#/components/schemas/AxleOut"
+      },
+      "type": "array",
+      "title": "Axles"
+     },
+     "identity": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/IdentityOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "decision": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DecisionOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "station_id",
+     "lane_id",
+     "vehicle_id",
+     "plate",
+     "shipment_id",
+     "occurred_at",
+     "speed_mps",
+     "gvm_kg",
+     "gvm_uncertainty_kg",
+     "axle_count",
+     "detected_axle_config",
+     "class_code",
+     "quality_flags",
+     "sensor_health",
+     "pavement_temp_c",
+     "source",
+     "kind",
+     "axles",
+     "identity",
+     "decision"
+    ],
+    "title": "WeighingOut"
+   },
+   "WhatIfIn": {
+    "properties": {
+     "stops_avoided": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Stops Avoided"
+     },
+     "stops_made": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Stops Made"
+     },
+     "avg_queue_wait_s": {
+      "type": "integer",
+      "maximum": 86400.0,
+      "minimum": 0.0,
+      "title": "Avg Queue Wait S"
+     },
+     "empty_km": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Empty Km",
+      "default": 0
+     },
+     "empty_km_avoided": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Empty Km Avoided",
+      "default": 0
+     },
+     "detour_km": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Detour Km",
+      "default": 0
+     },
+     "factors": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Factors"
+     }
+    },
+    "type": "object",
+    "required": [
+     "stops_avoided",
+     "stops_made",
+     "avg_queue_wait_s"
+    ],
+    "title": "WhatIfIn"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  }
+ }
+}

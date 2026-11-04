@@ -174,6 +174,7 @@ def process_lane_pass(
         identity_min_confidence=s.identity_min_confidence,
         audit_rate=s.audit_sample_rate,
         lane_calibration_valid=_lane_calibration_valid(lane, occurred_at),
+        require_two_sources=s.identity_require_two_sources,
     )
     latency_ms = int((time.perf_counter() - t_start) * 1000)
     dec = ClearanceDecision(

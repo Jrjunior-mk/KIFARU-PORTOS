@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and adjust.
+aws_region        = "af-south-1"
+state_bucket_name = "" # empty => kifaru-terraform-state-<account id>
+lock_table_name   = "kifaru-terraform-locks"

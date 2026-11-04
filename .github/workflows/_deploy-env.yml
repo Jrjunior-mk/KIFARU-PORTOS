@@ -1,0 +1,243 @@
+# Reusable per-environment deployment. Called by deploy.yml; the `environment:` binding is what enforces the GitHub
+# Environment protection rules (required reviewers for prod) and scopes the OIDC subject to `environment:<name>`,
+# which is exactly what modules/ci_oidc trusts.
+name: _deploy-env
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      image_tag:
+        type: string
+        required: true
+      run_seed:
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TERRAFORM_VERSION: "1.9.8"
+  NODE_VERSION: "20"
+
+jobs:
+  web:
+    name: Build web bundle (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - working-directory: apps/web
+        run: npm ci --no-audit --no-fund
+      - name: Build (API on its own hostname behind CloudFront)
+        working-directory: apps/web
+        env:
+          VITE_API_BASE: ${{ vars.PUBLIC_API_URL }}
+          VITE_WS_BASE: ${{ vars.PUBLIC_WS_URL || '' }}
+          VITE_APP_VERSION: ${{ inputs.image_tag }}
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist-${{ inputs.environment }}-${{ inputs.image_tag }}
+          path: apps/web/dist
+          retention-days: 14
+
+  images:
+    name: Build and push images (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    outputs:
+      api_image: ${{ steps.meta.outputs.api_image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC, deploy role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-images-${{ inputs.environment }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - id: meta
+        run: |
+          reg="${{ steps.ecr.outputs.registry }}"
+          echo "api_image=${reg}/kifaru-${{ inputs.environment }}/api:${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          echo "web_image=${reg}/kifaru-${{ inputs.environment }}/web:${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.api_image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Build and push web (nginx image; same-origin /api proxy variant, used by compose and as a fallback)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          file: apps/web/Dockerfile
+          push: true
+          platforms: linux/amd64
+          build-args: |
+            VITE_API_BASE=
+            VITE_WS_BASE=
+          tags: ${{ steps.meta.outputs.web_image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+  terraform:
+    name: Terraform apply (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    needs: images
+    environment: ${{ inputs.environment }}
+    outputs:
+      cluster: ${{ steps.out.outputs.cluster }}
+      migrate_family: ${{ steps.out.outputs.migrate_family }}
+      seed_task: ${{ steps.out.outputs.seed_task }}
+      subnets: ${{ steps.out.outputs.subnets }}
+      sg: ${{ steps.out.outputs.sg }}
+      web_bucket: ${{ steps.out.outputs.web_bucket }}
+      web_distribution: ${{ steps.out.outputs.web_distribution }}
+      services: ${{ steps.out.outputs.services }}
+    defaults:
+      run:
+        working-directory: infra/terraform/envs/${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC, terraform role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-terraform-${{ inputs.environment }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Materialise tfvars from the environment secret
+        run: echo "${{ secrets.TF_VARS_B64 }}" | base64 -d > terraform.tfvars
+
+      - name: terraform init (remote state)
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=envs/${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.TF_STATE_LOCK_TABLE }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="kms_key_id=${{ vars.TF_STATE_KMS_KEY_ARN }}"
+
+      - name: terraform plan
+        run: terraform plan -input=false -var "image_tag=${{ inputs.image_tag }}" -out tfplan
+
+      - name: terraform apply
+        run: terraform apply -input=false tfplan
+
+      - id: out
+        name: Collect outputs
+        run: |
+          echo "cluster=$(terraform output -raw ecs_cluster_name)" >> "$GITHUB_OUTPUT"
+          echo "migrate_family=$(terraform output -raw migrate_task_definition_family)" >> "$GITHUB_OUTPUT"
+          echo "seed_task=$(terraform output -json seed_task_definition_arn | jq -r '. // empty')" >> "$GITHUB_OUTPUT"
+          echo "subnets=$(terraform output -json private_subnet_ids | jq -r 'join(",")')" >> "$GITHUB_OUTPUT"
+          echo "sg=$(terraform output -raw tasks_security_group_id)" >> "$GITHUB_OUTPUT"
+          echo "web_bucket=$(terraform output -raw web_bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "web_distribution=$(terraform output -raw web_distribution_id)" >> "$GITHUB_OUTPUT"
+          echo "services=$(terraform output -json ecs_service_names | jq -c '[.[]]')" >> "$GITHUB_OUTPUT"
+
+  migrate:
+    name: Run migrations (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    needs: terraform
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Configure AWS credentials (OIDC, deploy role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-migrate-${{ inputs.environment }}
+
+      - name: alembic upgrade head (one-off Fargate task)
+        run: |
+          set -euo pipefail
+          net="awsvpcConfiguration={subnets=[${{ needs.terraform.outputs.subnets }}],securityGroups=[${{ needs.terraform.outputs.sg }}],assignPublicIp=DISABLED}"
+          task=$(aws ecs run-task --cluster "${{ needs.terraform.outputs.cluster }}" --launch-type FARGATE \
+                   --task-definition "${{ needs.terraform.outputs.migrate_family }}" --network-configuration "$net" \
+                   --query 'tasks[0].taskArn' --output text)
+          echo "migrate task: $task"
+          aws ecs wait tasks-stopped --cluster "${{ needs.terraform.outputs.cluster }}" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "${{ needs.terraform.outputs.cluster }}" --tasks "$task" \
+                   --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "exit code: $code"
+          [ "$code" = "0" ]
+
+      - name: Seed demo data (dev/staging only)
+        if: inputs.run_seed && needs.terraform.outputs.seed_task != ''
+        run: |
+          set -euo pipefail
+          net="awsvpcConfiguration={subnets=[${{ needs.terraform.outputs.subnets }}],securityGroups=[${{ needs.terraform.outputs.sg }}],assignPublicIp=DISABLED}"
+          task=$(aws ecs run-task --cluster "${{ needs.terraform.outputs.cluster }}" --launch-type FARGATE \
+                   --task-definition "${{ needs.terraform.outputs.seed_task }}" --network-configuration "$net" \
+                   --query 'tasks[0].taskArn' --output text)
+          aws ecs wait tasks-stopped --cluster "${{ needs.terraform.outputs.cluster }}" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "${{ needs.terraform.outputs.cluster }}" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
+          [ "$code" = "0" ]
+
+  rollout:
+    name: Roll out services and web (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [web, terraform, migrate]
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Configure AWS credentials (OIDC, deploy role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-rollout-${{ inputs.environment }}
+
+      - name: Wait for ECS services to stabilise
+        # terraform apply already registered the new task definitions (image_tag var); this waits for the rolling update
+        # (circuit breaker rolls back automatically on failure).
+        run: |
+          services=$(echo '${{ needs.terraform.outputs.services }}' | jq -r '.[]' | tr '\n' ' ')
+          aws ecs wait services-stable --cluster "${{ needs.terraform.outputs.cluster }}" --services $services
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist-${{ inputs.environment }}-${{ inputs.image_tag }}
+          path: dist
+
+      - name: Sync SPA to S3 and invalidate CloudFront
+        run: |
+          aws s3 sync dist "s3://${{ needs.terraform.outputs.web_bucket }}/" --delete \
+            --cache-control "public,max-age=31536000,immutable" --exclude index.html
+          aws s3 cp dist/index.html "s3://${{ needs.terraform.outputs.web_bucket }}/index.html" \
+            --cache-control "no-cache,no-store,must-revalidate" --content-type text/html
+          aws cloudfront create-invalidation --distribution-id "${{ needs.terraform.outputs.web_distribution }}" --paths "/index.html" "/"

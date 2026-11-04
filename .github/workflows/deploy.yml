@@ -1,0 +1,104 @@
+# KIFARU PORTOS deployment.
+#
+#   * Tag push `v*`  -> build + push images, deploy STAGING automatically, then PROD after the GitHub Environment
+#                       `prod` approval gate (configure required reviewers on the Environment in repository settings).
+#   * Manual run     -> choose the environment (dev | staging | prod) and an image tag/ref.
+#
+# Authentication is GitHub OIDC -> AWS IAM roles created by modules/ci_oidc. No long-lived AWS keys exist anywhere.
+# Per-environment GitHub *variables* (Settings -> Environments -> <env> -> Variables):
+#   AWS_REGION, AWS_ACCOUNT_ID, AWS_DEPLOY_ROLE_ARN, AWS_TERRAFORM_ROLE_ARN,
+#   TF_STATE_BUCKET, TF_STATE_LOCK_TABLE, TF_STATE_KMS_KEY_ARN, PUBLIC_API_URL (https://api.<env domain>)
+# Per-environment GitHub *secret*: TF_VARS_B64 (base64 of the environment's terraform.tfvars; see deployment guide 6.3).
+#
+# NOTE: nothing in this file has been executed against a real AWS account yet (no account exists at the time of writing).
+
+name: Deploy
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        required: true
+        options: [dev, staging, prod]
+        default: dev
+      image_tag:
+        description: Image tag to build and deploy (defaults to the short git SHA)
+        type: string
+        required: false
+
+permissions:
+  contents: read
+  id-token: write # OIDC
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------------------------------------------------
+  prepare:
+    name: Resolve image tag and targets
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+      deploy_dev: ${{ steps.vars.outputs.deploy_dev }}
+      deploy_staging: ${{ steps.vars.outputs.deploy_staging }}
+      deploy_prod: ${{ steps.vars.outputs.deploy_prod }}
+    steps:
+      - id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "image_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "deploy_dev=false" >> "$GITHUB_OUTPUT"
+            echo "deploy_staging=true" >> "$GITHUB_OUTPUT"
+            echo "deploy_prod=true" >> "$GITHUB_OUTPUT"
+          else
+            tag="${{ inputs.image_tag }}"; [ -z "$tag" ] && tag="sha-${GITHUB_SHA::7}"
+            echo "image_tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "deploy_dev=${{ inputs.environment == 'dev' }}" >> "$GITHUB_OUTPUT"
+            echo "deploy_staging=${{ inputs.environment == 'staging' }}" >> "$GITHUB_OUTPUT"
+            echo "deploy_prod=${{ inputs.environment == 'prod' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------------------------------------------------
+  # The SPA is built inside _deploy-env.yml, once per environment, because the bundle embeds that environment's public
+  # API URL (VITE_API_BASE / VITE_WS_BASE from the Environment variable PUBLIC_API_URL).
+  deploy-dev:
+    name: Deploy dev
+    needs: [prepare]
+    if: needs.prepare.outputs.deploy_dev == 'true'
+    uses: ./.github/workflows/_deploy-env.yml
+    with:
+      environment: dev
+      image_tag: ${{ needs.prepare.outputs.image_tag }}
+      run_seed: true
+    secrets: inherit
+
+  deploy-staging:
+    name: Deploy staging
+    needs: [prepare]
+    if: needs.prepare.outputs.deploy_staging == 'true'
+    uses: ./.github/workflows/_deploy-env.yml
+    with:
+      environment: staging
+      image_tag: ${{ needs.prepare.outputs.image_tag }}
+      run_seed: false
+    secrets: inherit
+
+  deploy-prod:
+    name: Deploy prod (requires Environment approval)
+    needs: [prepare, deploy-staging]
+    # On a tag push prod follows a successful staging deploy; on manual dispatch it runs alone.
+    if: |
+      needs.prepare.outputs.deploy_prod == 'true' &&
+      (needs.deploy-staging.result == 'success' || needs.deploy-staging.result == 'skipped')
+    uses: ./.github/workflows/_deploy-env.yml
+    with:
+      environment: prod
+      image_tag: ${{ needs.prepare.outputs.image_tag }}
+      run_seed: false
+    secrets: inherit

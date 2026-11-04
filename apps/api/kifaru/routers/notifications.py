@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from ..deps import CurrentUser, DbDep, Principal, require_roles
 from ..events import publish
 from ..models import ApiIntegration, Notification, User, utcnow
+from ..pii import decrypt
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -62,7 +63,7 @@ def notify(db: Session, *, user_id: str | None, org_id: str | None, template: st
             n.status, n.sent_at = "sent", utcnow()
             publish("notification", {"user_id": user_id, "org_id": org_id, "title": title, "body": body, "template": template, **(payload or {})}, org_id=org_id)
         elif ch == "sms":
-            phone = user.pii.phone_enc if user and user.pii else None
+            phone = decrypt(user.pii.phone_enc) if user and user.pii else None
             if phone:
                 n.status, n.provider_ref = send_sms(db, phone, body[:160])
                 n.sent_at = utcnow()

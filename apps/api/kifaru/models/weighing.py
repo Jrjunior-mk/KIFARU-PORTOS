@@ -92,18 +92,25 @@ class ClearanceDecision(ULIDPk, Timestamped, Base):
     static_verified_gvm_kg: Mapped[int | None] = mapped_column(Integer)
 
     event: Mapped[WeighingEvent] = relationship(back_populates="decision")
-    ticket: Mapped[DigitalTicket | None] = relationship(back_populates="decision", uselist=False, lazy="selectin")
+    tickets: Mapped[list[DigitalTicket]] = relationship(back_populates="decision", lazy="selectin", order_by="DigitalTicket.created_at")
+
+    @property
+    def ticket(self) -> DigitalTicket | None:
+        """The active ticket (static_certified supersedes prescreen); superseded tickets remain verifiable evidence."""
+        active = [t for t in self.tickets if t.status == "active"]
+        return active[-1] if active else (self.tickets[-1] if self.tickets else None)
 
 
 class DigitalTicket(ULIDPk, Timestamped, Base):
     __tablename__ = "digital_tickets"
     __table_args__ = {"schema": "core"}
-    decision_id: Mapped[str] = mapped_column(CHAR(26), ForeignKey("core.clearance_decisions.id"), unique=True)
+    decision_id: Mapped[str] = mapped_column(CHAR(26), ForeignKey("core.clearance_decisions.id"), index=True)
     type: Mapped[str] = mapped_column(String(20))  # prescreen | static_certified
+    status: Mapped[str] = mapped_column(String(12), default="active")  # active | superseded (never deleted: evidence)
     payload: Mapped[dict] = mapped_column(JSON)
     signature: Mapped[str] = mapped_column(String(128))
     signer_key_id: Mapped[str] = mapped_column(String(64))
     qr_token: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     object_key: Mapped[str | None] = mapped_column(String(255))
 
-    decision: Mapped[ClearanceDecision] = relationship(back_populates="ticket")
+    decision: Mapped[ClearanceDecision] = relationship(back_populates="tickets")

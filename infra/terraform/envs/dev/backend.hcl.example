@@ -1,0 +1,8 @@
+# Copy to backend.hcl (git-ignored) and fill from `terraform output` in infra/terraform/bootstrap.
+# Usage: terraform init -backend-config=backend.hcl
+bucket         = "kifaru-terraform-state-<ACCOUNT_ID>"
+key            = "envs/dev/terraform.tfstate"
+region         = "af-south-1"
+dynamodb_table = "kifaru-terraform-locks"
+encrypt        = true
+kms_key_id     = "arn:aws:kms:af-south-1:<ACCOUNT_ID>:key/<STATE_KEY_ID>"

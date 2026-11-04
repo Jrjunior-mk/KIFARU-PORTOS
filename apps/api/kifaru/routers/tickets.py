@@ -18,11 +18,12 @@ class TicketOut(BaseModel):
     signature: str
     signer_key_id: str
     qr_token: str
+    status: str
     signature_valid: bool
 
 
 def _out(t: DigitalTicket) -> TicketOut:
-    return TicketOut(id=t.id, type=t.type, payload=t.payload, signature=t.signature, signer_key_id=t.signer_key_id, qr_token=t.qr_token, signature_valid=svc.verify(t))
+    return TicketOut(id=t.id, type=t.type, payload=t.payload, signature=t.signature, signer_key_id=t.signer_key_id, qr_token=t.qr_token, status=t.status, signature_valid=svc.verify(t))
 
 
 @router.get("/{ticket_id}", response_model=TicketOut)
@@ -52,6 +53,8 @@ class VerifyOut(BaseModel):
     station: str | None = None
     source: str | None = None
     evidence_hash: str | None = None
+    status: str | None = None
+    note: str | None = None
 
 
 @router.get("/verify/{qr_token}", response_model=VerifyOut, tags=["public"])
@@ -63,4 +66,5 @@ def verify_public(qr_token: str, db: DbDep):
     ok = svc.verify(t)
     pl = t.payload
     return VerifyOut(valid=ok, ticket_type=t.type, legal_status=pl.get("legal_status"), plate=pl.get("plate"), gvm_kg=pl.get("gvm_kg"),
-                     decision=pl.get("decision"), occurred_at=pl.get("occurred_at"), station=pl.get("station"), source=pl.get("source"), evidence_hash=pl.get("evidence_hash"))
+                     decision=pl.get("decision"), occurred_at=pl.get("occurred_at"), station=pl.get("station"), source=pl.get("source"), evidence_hash=pl.get("evidence_hash"),
+                     status=t.status, note="superseded by a later ticket for the same decision (e.g. static certification)" if t.status == "superseded" else None)

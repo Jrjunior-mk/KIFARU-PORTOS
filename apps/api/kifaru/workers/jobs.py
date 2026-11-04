@@ -14,19 +14,31 @@ import signal
 import sys
 import threading
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from kifaru_ai_agents.agents_misc import OperationalIncidentAgent
+from kifaru_ai_agents.agents_misc import OperationalIncidentAgent, SecurityAnomalyAgent
 from kifaru_ai_agents.release_predictor import ReleasePredictionAgent
 
 from ..config import get_settings
 from ..db import get_sessionmaker
 from ..events import EventType, publish
-from ..models import CargoProcessingEvent, ClearanceDecision, Incident, QueueRecord, Shipment, Warehouse, WeighingEvent, WeighingStation, utcnow
+from ..models import (
+    AuditEvent,
+    CargoProcessingEvent,
+    ClearanceDecision,
+    IdentityEvent,
+    Incident,
+    QueueRecord,
+    Shipment,
+    Warehouse,
+    WeighingEvent,
+    WeighingStation,
+    utcnow,
+)
 from ..services.queue_forecast import forecast_station
 
 log = structlog.get_logger("kifaru.workers.jobs")
@@ -145,15 +157,52 @@ def refresh_incidents(db: Session, forecasts: dict[str, list[QueueRecord]] | Non
     return created
 
 
+# ------------------------------------------------------------------------------------------------- security
+def refresh_security(db: Session, window_hours: int = 24) -> list[Incident]:
+    """Feed the last window of security-relevant events to the SecurityAnomalyAgent and open incidents for its alerts."""
+    agent = SecurityAnomalyAgent()
+    since = utcnow() - timedelta(hours=window_hours)
+    events: list[dict] = []
+    for a in db.execute(select(AuditEvent).where(AuditEvent.at >= since, AuditEvent.action.in_(["login_failed", "override"]))).scalars():
+        events.append({"type": a.action, "ts": a.at if a.at.tzinfo else a.at.replace(tzinfo=UTC), "user_id": a.actor_user_id or (a.entity_id if a.action == "login_failed" else None)})
+    stations = {st.id: st for st in db.execute(select(WeighingStation)).scalars()}
+    rows = db.execute(select(IdentityEvent, WeighingEvent).join(WeighingEvent, WeighingEvent.id == IdentityEvent.weighing_event_id).where(WeighingEvent.occurred_at >= since)).all()
+    for ident, ev in rows:
+        st = stations.get(ev.station_id)
+        ts = ev.occurred_at if ev.occurred_at.tzinfo else ev.occurred_at.replace(tzinfo=UTC)
+        if ident.method == "conflict":
+            events.append({"type": "identity_conflict", "ts": ts, "station_id": ev.station_id, "plate": ident.anpr_plate, "epc": ident.rfid_epc})
+        if ident.rfid_epc and st is not None:
+            events.append({"type": "weighing", "ts": ts, "station_id": ev.station_id, "epc": ident.rfid_epc, "lat": st.lat, "lon": st.lon})
+    res = agent.run({"events": events})
+    created: list[Incident] = []
+    if not res.ok:
+        log.warning("security_agent_failed", error=res.error)
+        return created
+    for alert in res.output.get("alerts", []):
+        title = f"Security: {alert['kind']} - {alert['detail'][:120]}"
+        if db.execute(select(Incident).where(Incident.title == title, Incident.status == "open")).scalars().first():
+            continue
+        inc = Incident(station_id=None, severity=alert["severity"], category="security", title=title,
+                       details={"alert": alert, "agent": f"{agent.name}@{agent.version}", "confidence": res.confidence, "window_hours": window_hours},
+                       status="open", opened_at=utcnow(), raised_by="security_anomaly_agent")
+        db.add(inc)
+        db.flush()
+        publish(EventType.INCIDENT_OPENED, {"incident_id": inc.id, "severity": inc.severity, "category": "security", "title": inc.title}, org_id="platform", source="jobs-worker")
+        created.append(inc)
+    return created
+
+
 # ------------------------------------------------------------------------------------------------- orchestration
 def run_once(db: Session) -> dict:
     t0 = time.perf_counter()
     forecasts = refresh_forecasts(db)
     n_pred = refresh_release_predictions(db)
     incidents = refresh_incidents(db, forecasts)
+    sec = refresh_security(db)
     db.commit()
     summary = {"stations_forecast": len(forecasts), "forecast_records": sum(len(v) for v in forecasts.values()), "shipments_predicted": n_pred,
-               "incidents_opened": len(incidents), "duration_ms": int((time.perf_counter() - t0) * 1000), "at": datetime.now(UTC).isoformat()}
+               "incidents_opened": len(incidents), "security_incidents_opened": len(sec), "duration_ms": int((time.perf_counter() - t0) * 1000), "at": datetime.now(UTC).isoformat()}
     log.info("jobs_run", **summary)
     return summary
 

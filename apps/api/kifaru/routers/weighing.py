@@ -246,10 +246,9 @@ def static_verify(event_id: str, body: StaticVerifyIn, db: DbDep, p: Principal =
     plate = db.get(Vehicle, ev.vehicle_id).plate if ev.vehicle_id else (ev.identity.anpr_plate if ev.identity else None)
     lane = db.get(Lane, ev.lane_id)
     station_code = lane.station.code if lane and lane.station else ev.station_id
-    if d.ticket:
-        db.delete(d.ticket)
-        db.flush()
-        db.refresh(d)
+    for old in d.tickets:  # prescreen ticket is kept as evidence but marked superseded (never deleted)
+        if old.status == "active":
+            old.status = "superseded"
     t = tickets.issue(db, ev, d, "static_certified", plate, station_code)
     err_pct = (ev.gvm_kg - body.static_gvm_kg) / body.static_gvm_kg * 100.0
     ledger.append(db, "static.verified", {"weighing_event_id": ev.id, "static_gvm_kg": body.static_gvm_kg, "wim_gvm_kg": ev.gvm_kg,

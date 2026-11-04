@@ -55,6 +55,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     s = get_settings()
+    s.validate_for_deployment()
     app = FastAPI(title=s.app_name, version=s.api_version, description=API_DESCRIPTION, lifespan=lifespan,
                   docs_url="/docs", redoc_url="/redoc", openapi_url="/openapi.json")
     app.add_middleware(CORSMiddleware, allow_origins=s.cors_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])

@@ -8,7 +8,9 @@ from sqlalchemy import select
 
 from ..config import get_settings
 from ..deps import CurrentUser, DbDep, audit, rate_limit
+from ..events import EventType, publish
 from ..models import Organization, RefreshSession, Role, User, UserPII, utcnow
+from ..pii import encrypt
 from ..schemas.common import Email
 from ..security import (
     create_access_token,
@@ -102,7 +104,7 @@ def register(body: RegisterIn, db: DbDep, request: Request):
     user.roles.append(role)
     db.add(user)
     db.flush()
-    db.add(UserPII(user_id=user.id, full_name=body.full_name, phone_enc=body.phone))
+    db.add(UserPII(user_id=user.id, full_name=body.full_name, phone_enc=encrypt(body.phone)))
     audit(db, None, "register", "user", user.id, after={"email": user.email, "org": org.id})
     return _issue(db, user, mfa_ok=False, request=request)
 
@@ -119,7 +121,10 @@ def login(body: LoginIn, db: DbDep, request: Request):
         user.failed_logins += 1
         if user.failed_logins >= 5:
             user.locked_until = utcnow() + timedelta(minutes=15)
+        ip = request.client.host if request.client else None
+        audit(db, None, "login_failed", "user", user.id, after={"attempt": user.failed_logins}, ip=ip)
         db.commit()
+        publish(EventType.LOGIN_FAILED, {"user_id": user.id, "ip": ip, "attempt": user.failed_logins}, org_id="platform")
         raise generic
     mfa_ok = False
     if user.mfa_enabled:

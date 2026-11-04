@@ -32,6 +32,7 @@ from .models import (
     WeighingStation,
     utcnow,
 )
+from .pii import encrypt
 from .routers.integrations import ensure_registry
 from .routers.stations import DEFAULT_LANE_SENSORS
 from .security import hash_password
@@ -112,7 +113,7 @@ def seed(verbose: bool = True) -> None:
                 u.roles = [roles[r] for r in role_names]
                 db.add(u)
                 db.flush()
-                db.add(UserPII(user_id=u.id, full_name=full_name, phone_enc="+254700000000"))
+                db.add(UserPII(user_id=u.id, full_name=full_name, phone_enc=encrypt("+254700000000")))
 
         stations: dict[str, WeighingStation] = {}
         for code, name, lat, lon, cap, scap, alt in STATIONS:

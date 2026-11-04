@@ -39,6 +39,7 @@ class EventType(StrEnum):
     SHIPMENT_DELIVERED = "shipment.delivered"
     SENSOR_HEALTH = "sensor.health"
     INCIDENT_OPENED = "incident.opened"
+    LOGIN_FAILED = "security.login_failed"
 
 
 def make_event(type_: EventType | str, payload: dict[str, Any], station_id: str | None = None, org_id: str | None = None, source: str = "cloud-api") -> dict:

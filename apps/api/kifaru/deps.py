@@ -61,6 +61,9 @@ def require_roles(*roles: str, mfa: bool | None = None) -> Callable:
             raise HTTPException(status.HTTP_403_FORBIDDEN, f"Requires one of roles: {roles}")
         s = get_settings()
         needs_mfa = mfa if mfa is not None else any(r in s.mfa_required_roles for r in p.roles)
+        enforce_enrolment = s.mfa_enforce_enrolment if s.mfa_enforce_enrolment is not None else s.is_deployed
+        if needs_mfa and not p.user.mfa_enabled and enforce_enrolment:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "MFA enrolment required for this role (POST /auth/mfa/setup)")
         if needs_mfa and p.user.mfa_enabled and not p.mfa:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "MFA verification required for this role")
         return p

@@ -25,6 +25,7 @@ from ..models import (
     WeighingStation,
     utcnow,
 )
+from ..pii import encrypt
 from ..schemas.common import Email
 from ..security import hash_password, public_key_b64
 from ..services import ledger
@@ -77,7 +78,7 @@ def create_user(body: UserIn, db: DbDep, p: Principal = Depends(ADMIN)):
     u.roles = list(db.execute(select(Role).where(Role.name.in_(body.roles))).scalars())
     db.add(u)
     db.flush()
-    db.add(UserPII(user_id=u.id, full_name=body.full_name, phone_enc=body.phone))
+    db.add(UserPII(user_id=u.id, full_name=body.full_name, phone_enc=encrypt(body.phone)))
     audit(db, p, "create", "user", u.id, after={"email": u.email, "roles": body.roles})
     db.commit()
     return _u_out(db, u)

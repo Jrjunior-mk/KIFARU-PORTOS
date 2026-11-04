@@ -1,0 +1,10 @@
+# Local Terraform working files and anything that may hold real values
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+backend.hcl
+terraform.tfvars
+*.auto.tfvars
+!*.example

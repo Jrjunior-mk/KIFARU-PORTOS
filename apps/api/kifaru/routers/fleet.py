@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..models import Driver, DriverPII, Fleet, Organization, RfidTag, Trailer, Vehicle, utcnow
+from ..pii import encrypt
 from ..services.identity import normalise_plate
 
 router = APIRouter(prefix="/fleet", tags=["fleet"])
@@ -235,7 +236,7 @@ def create_driver(body: DriverIn, db: DbDep, p: Principal = Depends(FLEET_WRITE)
     d = Driver(org_id=p.org_id, fleet_id=body.fleet_id, license_class=body.license_class)
     db.add(d)
     db.flush()
-    db.add(DriverPII(driver_id=d.id, full_name=body.full_name, phone_enc=body.phone))
+    db.add(DriverPII(driver_id=d.id, full_name=body.full_name, phone_enc=encrypt(body.phone)))
     audit(db, p, "create", "driver", d.id)
     db.commit()
     return DriverOut(id=d.id, org_id=d.org_id, full_name=body.full_name, license_class=d.license_class, status=d.status)

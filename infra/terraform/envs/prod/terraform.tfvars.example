@@ -1,0 +1,116 @@
+# KIFARU PORTOS - production environment. Copy to terraform.tfvars (git-ignored) and replace every <PLACEHOLDER>.
+# Budget target: about USD 300-400/month before IoT message volume and data egress (see deployment guide section 9).
+# Production never creates demo users: create_seed_task is forced off by the ecs module when env = "prod".
+
+env        = "prod"
+aws_region = "af-south-1"
+dr_region  = "eu-west-1"
+
+# --- Owner-provided ------------------------------------------------------------------------------------------------------
+route53_zone_id   = "<ROUTE53_ZONE_ID>"
+web_domain        = "app.<DOMAIN>"
+api_domain        = "api.<DOMAIN>"
+api_origin_domain = "api-origin.<DOMAIN>"
+alarm_email       = "<ops-alerts@example.com>"
+
+github_org              = "<GITHUB_ORG>"
+github_repo             = "kifaru-portos"
+github_allowed_subjects = ["environment:prod"] # only the protected GitHub Environment (manual approval) may deploy prod
+create_oidc_provider    = true                 # prod should be its own AWS account; set false if it shares one with staging
+
+state_bucket_arn     = "arn:aws:s3:::kifaru-terraform-state-<ACCOUNT_ID>"
+state_lock_table_arn = "arn:aws:dynamodb:af-south-1:<ACCOUNT_ID>:table/kifaru-terraform-locks"
+
+# --- Images --------------------------------------------------------------------------------------------------------------
+image_tag        = "v0.1.0" # overridden by the deploy workflow with the release tag
+cpu_architecture = "X86_64"
+
+# --- Network -------------------------------------------------------------------------------------------------------------
+vpc_cidr                   = "10.42.0.0/16"
+single_nat_gateway         = false # one NAT gateway per AZ
+enable_interface_endpoints = true
+
+# --- Compute -------------------------------------------------------------------------------------------------------------
+use_fargate_spot           = false
+restrict_alb_to_cloudfront = true
+create_seed_task           = false
+log_level                  = "INFO"
+log_retention_days         = 90
+
+services = {
+  api = {
+    cpu           = 1024
+    memory        = 2048
+    desired_count = 2
+    min_count     = 2
+    max_count     = 8
+    command       = ["uvicorn", "kifaru.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    attach_alb    = true
+    priority      = 100
+    cpu_target    = 55
+  }
+  realtime = {
+    cpu           = 512
+    memory        = 1024
+    desired_count = 2
+    min_count     = 2
+    max_count     = 6
+    command       = ["uvicorn", "kifaru.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    attach_alb    = true
+    path_patterns = ["/ws/*"]
+    priority      = 10
+  }
+  worker = {
+    cpu           = 512
+    memory        = 1024
+    desired_count = 1
+    min_count     = 1
+    max_count     = 4
+    command       = ["python", "-m", "kifaru.worker"]
+    attach_alb    = false
+  }
+  ingest = {
+    cpu           = 512
+    memory        = 1024
+    desired_count = 1
+    min_count     = 1
+    max_count     = 4
+    command       = ["python", "-m", "kifaru.ingest"]
+    attach_alb    = false
+  }
+}
+
+# --- Database ------------------------------------------------------------------------------------------------------------
+rds_instance_class                  = "db.t4g.medium"
+rds_allocated_storage               = 100
+rds_max_allocated_storage           = 500
+rds_multi_az                        = true
+rds_deletion_protection             = true
+rds_skip_final_snapshot             = false
+rds_cross_region_backup_replication = true # required for the RPO 15 min DR target
+rds_rotation_lambda_arn             = null # set after deploying the SecretsManagerRDSPostgreSQLRotationSingleUser SAR app
+rds_max_connections_alarm           = 320
+
+# --- Redis ---------------------------------------------------------------------------------------------------------------
+redis_node_type                = "cache.t4g.small"
+redis_num_cache_clusters       = 2 # Multi-AZ with automatic failover
+redis_snapshot_retention_limit = 7
+
+# --- Storage -------------------------------------------------------------------------------------------------------------
+s3_enable_replication = true
+s3_force_destroy      = false
+
+# --- IoT -----------------------------------------------------------------------------------------------------------------
+iot_mode             = "iot_core"
+emqx_certificate_arn = null
+enable_iot_logging   = true
+
+# --- Edge ----------------------------------------------------------------------------------------------------------------
+cloudfront_price_class = "PriceClass_All"
+waf_rate_limit         = 3000
+waf_rate_limit_auth    = 60
+
+# --- Secrets / backups ---------------------------------------------------------------------------------------------------
+secrets_recovery_window_in_days = 30
+enable_pg_dump                  = true
+pg_dump_schedule                = "cron(30 0 * * ? *)"

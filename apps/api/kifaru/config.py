@@ -58,6 +58,16 @@ class Settings(BaseSettings):
     identity_min_confidence: float = 0.90
     coverage_factor_k: float = 2.0
 
+    # PII column encryption key (base64, 32 bytes). Required in staging/prod; derived from the JWT secret in dev/test.
+    pii_key_b64: str | None = None
+    # Privileged roles must have enrolled MFA before any privileged action (None = enforce in staging/prod only)
+    mfa_enforce_enrolment: bool | None = None
+    # Pilot recommendation: require two independent identity sources (RFID and ANPR) for GREEN
+    identity_require_two_sources: bool = False
+    # Which ingest transport the `kifaru.ingest` entrypoint runs: iot_core (SQS from IoT rule) | emqx (MQTT) | none
+    iot_mode: str = "emqx"
+    events_queue_url: str | None = None
+
     # Public URL used in QR codes
     public_base_url: str = "http://localhost:5173"
 
@@ -70,6 +80,26 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
+
+    @property
+    def is_deployed(self) -> bool:
+        return self.env in ("staging", "prod")
+
+    def validate_for_deployment(self) -> None:
+        """Refuse to start a deployed environment with development defaults."""
+        if not self.is_deployed:
+            return
+        problems = []
+        if self.jwt_secret.startswith("CHANGE-ME"):
+            problems.append("KIFARU_JWT_SECRET is the development default")
+        if not self.signing_seed_b64:
+            problems.append("KIFARU_SIGNING_SEED_B64 is not set")
+        if not self.pii_key_b64:
+            problems.append("KIFARU_PII_KEY_B64 is not set")
+        if self.is_sqlite:
+            problems.append("SQLite is not permitted in deployed environments")
+        if problems:
+            raise RuntimeError("Unsafe deployment configuration: " + "; ".join(problems))
 
 
 @lru_cache

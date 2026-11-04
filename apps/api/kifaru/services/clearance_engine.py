@@ -149,6 +149,7 @@ def decide(
     audit_rate: float = 0.02,
     audit_seed: int | None = None,
     lane_calibration_valid: bool = True,
+    require_two_sources: bool = False,
 ) -> ClearanceResult:
     rules: list[RuleResult] = []
     cargo = cargo or CargoInput()
@@ -246,6 +247,9 @@ def decide(
     rules.append(RuleResult("VEHICLE_UNKNOWN", "AMBER", unknown, "vehicle not registered on the platform" if unknown else f"vehicle {vehicle.plate} registered"))
     low_conf = (not unknown) and identity.confidence < identity_min_confidence
     rules.append(RuleResult("IDENTITY_LOW_CONFIDENCE", "AMBER", low_conf, f"identity confidence {identity.confidence:.2f} < {identity_min_confidence}" if low_conf else "identity confidence sufficient"))
+
+    single = require_two_sources and identity.method in ("rfid", "anpr")
+    rules.append(RuleResult("IDENTITY_SINGLE_SOURCE", "AMBER", single, f"only one identity source ({identity.method}); two required for GREEN" if single else "two-source identity rule satisfied or not enabled"))
 
     if vehicle is not None:
         expected = vehicle.axle_config if not vehicle.trailer_axle_config else f"{vehicle.axle_config}+{vehicle.trailer_axle_config}"

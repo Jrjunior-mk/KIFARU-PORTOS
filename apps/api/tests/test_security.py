@@ -73,7 +73,7 @@ def test_public_verify_leaks_no_pii(client, operator):
     if not evs or not evs[0]["decision"]:
         pytest.skip("no events")
     v = client.get(f"{API}/tickets/verify/{evs[0]['decision']['qr_token']}").json()
-    assert set(v.keys()) <= {"valid", "ticket_type", "legal_status", "plate", "gvm_kg", "decision", "occurred_at", "station", "source", "evidence_hash"}
+    assert set(v.keys()) <= {"valid", "ticket_type", "legal_status", "plate", "gvm_kg", "decision", "occurred_at", "station", "source", "evidence_hash", "status", "note"}
 
 
 def test_websocket_rejects_bad_token(client):

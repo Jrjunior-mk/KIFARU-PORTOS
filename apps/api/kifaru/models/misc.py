@@ -73,7 +73,7 @@ class LedgerEvent(Base):
     __tablename__ = "ledger_events"
     __table_args__ = (Index("ix_ledger_type_ts", "type", "occurred_at"), {"schema": "core"})
     event_id: Mapped[str] = mapped_column(CHAR(26), primary_key=True)
-    seq: Mapped[int] = mapped_column(Integer, index=True)
+    seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
     type: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSON)
     station_id: Mapped[str | None] = mapped_column(CHAR(26))
