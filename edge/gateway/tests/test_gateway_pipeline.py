@@ -2,8 +2,6 @@
 import time
 from pathlib import Path
 
-from ulid import ULID
-
 from kifaru_gateway.clearance_mirror import ClearanceMirror
 from kifaru_gateway.config import GatewayConfig
 from kifaru_gateway.daq_client import SimulatedDaq
@@ -12,6 +10,7 @@ from kifaru_gateway.main import Gateway, demo_snapshot
 from kifaru_gateway.outbox import Outbox
 from kifaru_gateway.uplink import MemoryUplink
 from kifaru_gateway.vms import MockModbusBackend, VmsController
+from ulid import ULID
 
 
 def _gateway(tmp_path: Path, seed=3):

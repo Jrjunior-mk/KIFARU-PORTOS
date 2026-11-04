@@ -23,12 +23,12 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance criteria | Status |
 |---|---|---|---|---|---|---|---|
-| WIM-01 | Multi-sensor lane: piezo, bending plate/strain gauge, loops, radar, IR, ANPR, RFID, pavement temp, ambient T/RH, axle/wheel detectors | MP M1 | R | 6 | `docs/03-hardware`, firmware | Sensor architecture doc + BOM; firmware channel map | Planned |
-| WIM-02 | 5–10 kHz/channel acquisition, anti-alias, 24-bit ADC | MP M1 | R | 6 | firmware `stm32-wim-daq` | ADS131M08 at 8 kSPS/ch verified on bench | Planned |
-| WIM-03 | No HX711 on highway lane | MP M1 | R | 6 | hardware doc | BOM excludes HX711 for lane; allowed only on lab aux | Planned |
-| WIM-04 | Charge amplifier for piezo-quartz | MP M1 | N | 6 | `docs/03-hardware/analog-front-end.md` | LTspice sim + bench noise floor | Planned |
+| WIM-01 | Multi-sensor lane: piezo, bending plate/strain gauge, loops, radar, IR, ANPR, RFID, pavement temp, ambient T/RH, axle/wheel detectors | MP M1 | R | 6 | `docs/03-hardware`, firmware | Sensor architecture doc + BOM; firmware channel map | Designed (docs/03-hardware/sensor-architecture.md, bom.md); hardware not built |
+| WIM-02 | 5–10 kHz/channel acquisition, anti-alias, 24-bit ADC | MP M1 | R | 6 | firmware `stm32-wim-daq` | ADS131M08 at 8 kSPS/ch verified on bench | Designed (ADS131M08 at 8 kSPS; firmware acq task written, not compiled — no toolchain) |
+| WIM-03 | No HX711 on highway lane | MP M1 | R | 6 | hardware doc | BOM excludes HX711 for lane; allowed only on lab aux | Done (HX711 excluded in BOM; lab rig only) |
+| WIM-04 | Charge amplifier for piezo-quartz | MP M1 | N | 6 | `docs/03-hardware/analog-front-end.md` | LTspice sim + bench noise floor | Designed (charge amplifier derivation, LTspice netlist; not simulated here) |
 | WIM-05 | DSP: axle detection, spacing, speed, GVM, classification, temperature and dynamic compensation, uncertainty, sensor health | MP M1 | E | 2 (python), 6 (fw) | `packages/wim_dsp` | Unit tests on synthetic + recorded signals; error vs reference reported | Done (Python reference, 24 tests) |
-| WIM-06 | STM32 primary, ESP32 auxiliary | MP M1 | N | 6 | firmware | Build passes; HIL test | Planned |
+| WIM-06 | STM32 primary, ESP32 auxiliary | MP M1 | N | 6 | firmware | Build passes; HIL test | Written (STM32H743 FreeRTOS firmware + ESP32 aux; not compiled — no toolchain) |
 | WIM-07 | Sensor health monitoring | MP M1 | N | 2/6 | `wim_dsp.health`, `kifaru/stations` | Health states OK/DEGRADED/FAULT with reasons | Done (health flags + sensor status API) |
 ## C. Module 3 — Traffic and queue intelligence
 
@@ -64,9 +64,8 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| SCO-01 | Mobile-first register/track/notify | MP M7 | N | 3 | `apps/web` (PWA), `apps/mobile` | Lighthouse mobile pass; PWA installable | Planned |
-| SCO-02 | Low-bandwidth, SMS/USSD-compatible notifications | MP M7 | N | 3 | `kifaru/notifications` SMS adapter | 160-char templates; USSD menu spec | Planned |
-
+| SCO-01 | Mobile-first register/track/notify | MP M7 | N | 3 | `apps/web` (PWA), `apps/mobile` | Lighthouse mobile pass; PWA installable | Done (PWA web app mobile-first owner view; Flutter app written, not compiled) |
+| SCO-02 | Low-bandwidth, SMS/USSD-compatible notifications | MP M7 | N | 3 | `kifaru/notifications` SMS adapter | 160-char templates; USSD menu spec | Designed (SMS templates ≤160 chars, USSD menu spec; SMS adapter mock) |
 ## H. Module 8 — Environmental
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
@@ -85,7 +84,7 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 | CLD-01 | Provider evaluation and selection documented | MP §4 | N | 1 | `docs/02-architecture/cloud-architecture.md` | Done in this phase | Done |
 | CLD-02 | Terraform for dev/staging/prod; ECS Fargate, RDS, Redis, IoT Core, S3, CloudFront, Route53, ACM, CloudWatch, Secrets, WAF, SQS | MP §4 | N | 2 | `infra/terraform` | `terraform validate` passes; plan documented | Done (12 Terraform modules, 3 env roots + bootstrap; fmt and validate pass; no apply without owner AWS account) |
 | CLD-03 | Actual deployment verified | MP §4 | N | 2 | — | **Blocked: requires owner's AWS account credentials** | Blocked: requires owner's AWS account; deployment guide ready |
-| CLD-04 | Edge store-and-forward during outage | MP §4 | N | 3/6 | `edge/gateway` | Outage test: no event loss | In progress (gateway outbox in edge/gateway; HIL test Phase 6) |
+| CLD-04 | Edge store-and-forward during outage | MP §4 | N | 3/6 | `edge/gateway` | Outage test: no event loss | Done in software (edge/gateway SQLite outbox: 22 tests incl. outage replay, no duplicates); field test Phase 6 |
 | CLD-05 | Docker + CI/CD (GitHub Actions) | MP §4 | N | 2 | `infra/docker`, `.github` | CI green on push | Done (Dockerfiles, Compose, GitHub Actions ci.yml + deploy.yml with OIDC; images not built locally — no Docker) |
 | RTC-01 | MQTT (devices), WebSocket (dashboards), REST, queue, webhooks, Redis | MP §5 | N | 2/3 | `kifaru/realtime` | Dashboards update without refresh | Done (REST, WS, Redis fan-in/out, MQTT and SQS ingest workers) |
 | RTC-02 | 13 event categories | MP §5 | N | 2 | `kifaru/events` | Enum + schema per event | Done |
@@ -94,13 +93,13 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| APP-01..07 | Port control, weighbridge operator, transporter, driver, cargo owner, warehouse, admin dashboards — all wired to real APIs | MP §7 | N | 2–5 | `apps/web` | No decorative controls; every action hits an API | Planned |
-| APP-08 | Driver app: no phone interaction while driving (voice/large-tile, auto-advance) | MP §7 | N | 3 | `apps/mobile` | UX review checklist | Planned |
+| APP-01..07 | Port control, weighbridge operator, transporter, driver, cargo owner, warehouse, admin dashboards — all wired to real APIs | MP §7 | N | 2–5 | `apps/web` | No decorative controls; every action hits an API | Done (React app, 7 role routes wired to API, build passes, smoke-tested); no browser screenshot verification |
+| APP-08 | Driver app: no phone interaction while driving (voice/large-tile, auto-advance) | MP §7 | N | 3 | `apps/mobile` | UX review checklist | Done (web driver view + Flutter driver mode: no controls while driving, TTS, auto-update) |
 | DB-01 | Normalised schema for all 30 listed entities, PII separated, indexes, migrations, retention | MP §8 | N | 2 | `apps/api/alembic`, `docs/.../database-erd.md` | Alembic upgrade head clean; PII in `pii` schema | Done (Alembic 0001 verified up/down on SQLite; PostgreSQL run pending) |
-| DT-01 | Three.js port twin bound to live events; simulation-mode banner | MP §9 | N | 5 | `apps/web/twin` | Banner when source is not live | Planned |
+| DT-01 | Three.js port twin bound to live events; simulation-mode banner | MP §9 | N | 5 | `apps/web/twin` | Banner when source is not live | Done (Three.js twin bound to live events; SIMULATION MODE banner unless source=live) |
 | DT-02 | SimPy/SUMO scenarios (+20/30/50 %, failure, inspection rate, capacity, release delay, slot policies) with comparative reports | MP §9 | N | 5 | `packages/simulation` | CLI produces comparison table | Done (SimPy, 11 scenarios, comparison report with CIs; SUMO adapter degrades gracefully) |
-| HW-01..15 | 15 hardware deliverables with real calculations; lab rig distinguished from certified equipment | MP §10 | N | 1 (arch), 6 (detail) | `docs/03-hardware` | Calculations reproducible | Planned |
+| HW-01..15 | 15 hardware deliverables with real calculations; lab rig distinguished from certified equipment | MP §10 | N | 1 (arch), 6 (detail) | `docs/03-hardware` | Calculations reproducible | Designed (15 deliverables in docs/03-hardware with calculations; lab rig guide; not fabricated) |
 | SEC-01 | RBAC, MFA (privileged), Argon2, TLS, encryption at rest, device certs, audit, rate limit, validation, sessions, backup encryption, retention, privacy-by-design, DPA 2019 | MP §11 | N | 2+ | `kifaru/auth`, docs | Threat model doc; tests | Done for Phase 2 (threat model, controls catalogue, DPIA, IR plan; PII encryption, key pinning, MFA enrolment, deployment guard); TLS/KMS/device certs in Terraform |
-| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | In progress (57 API/security/worker, 24 DSP, 8 agent, 15 simulation tests; migrations on SQLite+PostgreSQL; load harness; E2E/outage/HIL pending) |
+| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | Done for Phase 2–5 (61 API/security/worker, 24 DSP, 8 agent, 15 simulation, 22 gateway tests; migrations SQLite+PostgreSQL; web build; load harness); HIL/E2E-browser pending |
 | TST-02 | Targets: latency 2 s, WIM ±5 % at 95 %, false-clear 1 %, identity 97 %, availability 99.9 %, stops −50 % — remain targets until measured | MP §12 | N | 7 | benchmarks | Reported with evidence only | Planned |
 | DOC-01 | 42-section engineering report | MP §13 | N | 7 (draft from 1) | `docs/05-report` | All sections present | Done (draft: 42-section engineering report, docs/05-report) |

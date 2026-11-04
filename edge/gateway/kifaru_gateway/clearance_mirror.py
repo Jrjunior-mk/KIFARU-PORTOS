@@ -55,13 +55,13 @@ class Snapshot:
         path.write_text(json.dumps(asdict(self), indent=2), encoding="utf-8")
 
     @classmethod
-    def load(cls, path: Path) -> "Snapshot":
+    def load(cls, path: Path) -> Snapshot:
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         d["vehicles"] = [VehicleRecord(**v) for v in d.get("vehicles", [])]
         return cls(**d)
 
     @classmethod
-    def from_cloud_payload(cls, payload: dict) -> "Snapshot":
+    def from_cloud_payload(cls, payload: dict) -> Snapshot:
         """Payload pushed on the `cmd` topic: {"version", "limits": {...}, "vehicles": [...], "identity_min_confidence", "audit_rate", "calibration_valid_until"}."""
         return cls(
             version=payload.get("version", "cloud"),
@@ -78,7 +78,7 @@ class Snapshot:
         return datetime.fromisoformat(self.calibration_valid_until) > at
 
 
-def _limits_to_dict(l: LimitSet) -> dict:
+def _limits_to_dict(ln: LimitSet) -> dict:
     d = asdict(l)
     return d
 

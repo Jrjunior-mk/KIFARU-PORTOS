@@ -8,10 +8,10 @@ import socket
 import struct
 import time
 import zlib
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import IntEnum
-from typing import Iterator
 
 import numpy as np
 
@@ -83,7 +83,7 @@ class AxleEvent:
         return self.STRUCT.pack(self.pass_id, self.axle_index, self.rows_valid, self.flags, 0, *self.t_row_us, *self.load_row_kg, self.speed_cmps, self.spacing_prev_mm)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "AxleEvent":
+    def unpack(cls, b: bytes) -> AxleEvent:
         v = cls.STRUCT.unpack(b[: cls.STRUCT.size])
         return cls(v[0], v[1], v[2], v[3], tuple(v[5:9]), tuple(v[9:13]), v[13], v[14])
 
@@ -100,7 +100,7 @@ class PassAxle:
         return self.STRUCT.pack(self.load_kg, self.u_kg, self.spacing_next_mm, self.group_no)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "PassAxle":
+    def unpack(cls, b: bytes) -> PassAxle:
         return cls(*cls.STRUCT.unpack(b[: cls.STRUCT.size]))
 
 
@@ -128,7 +128,7 @@ class PassSummary:
         return out
 
     @classmethod
-    def unpack(cls, b: bytes) -> "PassSummary":
+    def unpack(cls, b: bytes) -> PassSummary:
         if len(b) < cls.FIXED.size:
             raise FrameError("PASS_SUMMARY too short")
         v = cls.FIXED.unpack(b[: cls.FIXED.size])
@@ -160,7 +160,7 @@ class Health:
             HealthChannel.STRUCT.pack(c.noise_rms_kg_x10, c.baseline_kg, c.status, c.flags) for c in self.channels)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "Health":
+    def unpack(cls, b: bytes) -> Health:
         t, first, n = cls.HDR.unpack(b[: cls.HDR.size])
         chans = [HealthChannel(*HealthChannel.STRUCT.unpack(b[cls.HDR.size + 6 * i: cls.HDR.size + 6 * i + 6])) for i in range(n)]
         return cls(t, first, chans)
@@ -177,7 +177,7 @@ class LoopEvent:  # also IR_EVENT
         return self.STRUCT.pack(self.t_us, self.id, self.state, 0)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "LoopEvent":
+    def unpack(cls, b: bytes) -> LoopEvent:
         t, i, s, _ = cls.STRUCT.unpack(b[: cls.STRUCT.size])
         return cls(t, i, s)
 
@@ -198,7 +198,7 @@ class Env:
         return self.STRUCT.pack(self.t_us, self.pavement_c_x100, self.ambient_c_x100, self.rh_x100, self.cabinet_c_x100, self.bus_mv, self.batt_mv, self.digital)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "Env":
+    def unpack(cls, b: bytes) -> Env:
         return cls(*cls.STRUCT.unpack(b[: cls.STRUCT.size]))
 
     def to_dict(self) -> dict:
@@ -220,7 +220,7 @@ class TimeSync:
         return self.STRUCT.pack(self.utc_us_at_pps, self.pps_count)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "TimeSync":
+    def unpack(cls, b: bytes) -> TimeSync:
         return cls(*cls.STRUCT.unpack(b[: cls.STRUCT.size]))
 
 
@@ -236,7 +236,7 @@ class Heartbeat:
         return self.STRUCT.pack(self.t_us, self.uptime_s, self.fw_version, self.state)
 
     @classmethod
-    def unpack(cls, b: bytes) -> "Heartbeat":
+    def unpack(cls, b: bytes) -> Heartbeat:
         return cls(*cls.STRUCT.unpack(b[: cls.STRUCT.size]))
 
 
@@ -524,7 +524,7 @@ class UdpDaqClient:
     def poll(self) -> DaqMeasurement | None:
         try:
             buf, sender = self.sock.recvfrom(2048)
-        except socket.timeout:
+        except TimeoutError:
             return None
         self.last_sender = sender
         try:

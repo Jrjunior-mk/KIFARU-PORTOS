@@ -1,11 +1,11 @@
 """The edge mirror must produce exactly the API engine's decision (same inputs, same seed -> same evidence hash)."""
 from datetime import UTC, datetime, timedelta
 
-from kifaru.services import clearance_engine as ce
-from kifaru.services.limits import DEFAULT_LIMITS
-
 from kifaru_gateway.clearance_mirror import ClearanceMirror, Snapshot, VehicleRecord, audit_seed_for, measurement_input
 from kifaru_gateway.identity import AnprRead, RfidRead
+
+from kifaru.services import clearance_engine as ce
+from kifaru.services.limits import DEFAULT_LIMITS
 
 VEH = VehicleRecord("01TESTVEH0000000000000001", "KCA 123A", "1+1+2", 14500, 42000, epcs=["E2801160600002050B2B0001"])
 WATCH = VehicleRecord("01TESTVEH0000000000000002", "KDB 456B", "1+2+2", 16000, 48000, epcs=["E2801160600002050B2B0002"], watchlist_reason="stolen")

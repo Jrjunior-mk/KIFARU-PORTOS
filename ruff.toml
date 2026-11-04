@@ -5,7 +5,7 @@ extend-exclude = [".venv", "alembic/versions"]
 
 [lint]
 select = ["E", "F", "I", "UP", "B", "W"]
-ignore = ["E501", "B008", "B904", "UP017"]
+ignore = ["E501", "B008", "B904", "UP017", "B027"]
 
 [lint.isort]
 known-first-party = ["kifaru", "kifaru_wim_dsp", "kifaru_ai_agents", "kifaru_sim"]

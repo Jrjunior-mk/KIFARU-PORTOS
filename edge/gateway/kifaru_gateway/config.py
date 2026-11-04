@@ -70,7 +70,7 @@ class GatewayConfig:
         return f"kifaru/stations/{self.station}/lanes/{self.lane}/cmd"
 
     @classmethod
-    def from_env(cls, env: dict[str, str] | None = None) -> "GatewayConfig":
+    def from_env(cls, env: dict[str, str] | None = None) -> GatewayConfig:
         env = dict(os.environ if env is None else env)
         p = "KIFARU_GW_"
         kw: dict = {}

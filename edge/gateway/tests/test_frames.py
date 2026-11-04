@@ -4,8 +4,8 @@ import zlib
 
 import numpy as np
 import pytest
-
 from kifaru_gateway import daq_client as dc
+
 from kifaru_wim_dsp import TruckProfile, generate_pass, process_pass
 
 
