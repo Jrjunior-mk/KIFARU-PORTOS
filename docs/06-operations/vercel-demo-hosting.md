@@ -10,9 +10,10 @@ platform can be shown and used without any cloud account beyond a Vercel hobby p
 |---|---|
 | Web app | `apps/web` built by Vite into static files (`vercel.json` `buildCommand`/`outputDirectory`); SPA fallback rewrite to `index.html`. |
 | API | `api/index.py` exposes the FastAPI app as a Python serverless function; `/api/*`, `/health`, `/docs`, `/openapi.json` are rewritten to it. Local packages are imported via `sys.path`; third-party deps from `requirements.txt`. |
-| Database | `KIFARU_DATABASE_URL` is not set, so each function instance creates `/tmp/kifaru.db` (SQLite) and seeds it on cold start. **Data is ephemeral and may differ between instances.** Point `KIFARU_DATABASE_URL` at a hosted PostgreSQL (e.g. Neon via the Vercel Marketplace) to make it durable. |
+| Database | Without a hosted database each function instance creates `/tmp/kifaru.db` (SQLite) and seeds it on cold start. Seeded rows use deterministic ids (`seed.stable_id`) so every instance agrees on users, stations and vehicles and tokens work across instances, but **runtime data (simulated passes, shipments, refresh sessions) is per instance and ephemeral**. To make it durable: Vercel dashboard → project → Storage → Create Database (Neon Postgres, free tier) → connect to the project. The API picks up the injected `DATABASE_URL`/`POSTGRES_URL` automatically (`api/index.py`); redeploy once. |
 | Live updates | Vercel functions cannot hold WebSockets. The web app is built with `VITE_WS_DISABLED=1` and polls `GET /api/v1/events/recent` every 5 s instead (`apps/web/src/hooks/useLiveEvents.ts`). |
 | Workers | No background processes. Forecasts, release predictions and the security scan run on request (`GET /queue/{id}/forecast`, `POST /shipments/{id}/predict-release`) instead of on a schedule. |
+| Session lifetime | `KIFARU_ACCESS_TOKEN_MINUTES=240` on the demo because refresh sessions live in the per-instance database; with a hosted database the 15-minute default can be restored. |
 | Secrets | `KIFARU_JWT_SECRET`, `KIFARU_SIGNING_SEED_B64`, `KIFARU_PII_KEY_B64`, `KIFARU_SIGNING_KEY_ID`, `KIFARU_PUBLIC_BASE_URL`, `KIFARU_SEED_ACCOUNTS_JSON` (the demo accounts, as a secret environment variable — never in the repository). |
 
 ## Deploying

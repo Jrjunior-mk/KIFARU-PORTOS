@@ -22,7 +22,16 @@ for rel in ("apps/api", "packages/wim_dsp", "packages/ai_agents", "packages/simu
 os.environ.setdefault("KIFARU_ENV", "dev")
 os.environ.setdefault("KIFARU_LOCAL_OBJECT_DIR", "/tmp/kifaru-objects")
 if not os.environ.get("KIFARU_DATABASE_URL"):
-    os.environ["KIFARU_DATABASE_URL"] = "sqlite:////tmp/kifaru.db"
+    # Vercel Marketplace Postgres integrations (Neon, Supabase, ...) inject one of these automatically.
+    hosted = next((os.environ[k] for k in ("DATABASE_URL", "POSTGRES_URL", "POSTGRES_PRISMA_URL", "DATABASE_URL_UNPOOLED") if os.environ.get(k)), None)
+    if hosted:
+        if hosted.startswith("postgres://"):
+            hosted = "postgresql+psycopg://" + hosted[len("postgres://"):]
+        elif hosted.startswith("postgresql://"):
+            hosted = "postgresql+psycopg://" + hosted[len("postgresql://"):]
+        os.environ["KIFARU_DATABASE_URL"] = hosted
+    else:
+        os.environ["KIFARU_DATABASE_URL"] = "sqlite:////tmp/kifaru.db"
 
 from sqlalchemy import select  # noqa: E402
 
