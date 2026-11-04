@@ -41,6 +41,18 @@ from .pii import encrypt
 from .routers.integrations import ensure_registry
 from .routers.stations import DEFAULT_LANE_SENSORS
 from .security import hash_password
+
+
+def stable_id(*parts: str) -> str:
+    """Deterministic 26-char ULID-shaped id for seeded rows, so independently seeded databases agree on ids."""
+    import hashlib
+
+    from ulid import ULID
+
+    digest = hashlib.blake2b("|".join(("kifaru-seed", *parts)).encode(), digest_size=16).digest()
+    # keep the timestamp component (first 48 bits) at a fixed epoch so seeded ids sort before runtime ids
+    fixed = (1_700_000_000_000).to_bytes(6, "big") + digest[6:]
+    return str(ULID(fixed))
 from .services.identity import normalise_plate
 
 # Demo accounts are NOT part of the source tree. They come from (first match wins):
@@ -117,7 +129,7 @@ def seed(verbose: bool = True) -> None:
         for key, (name, typ) in ORGS.items():
             o = db.execute(select(Organization).where(Organization.name == name)).scalar_one_or_none()
             if o is None:
-                o = Organization(name=name, type=typ)
+                o = Organization(id=stable_id("org", key), name=name, type=typ)
                 db.add(o)
                 db.flush()
             orgs[key] = o
@@ -127,7 +139,7 @@ def seed(verbose: bool = True) -> None:
             if u is not None:
                 u.password_hash = hash_password(DEMO_PASSWORD)
             if u is None:
-                u = User(email=email, password_hash=hash_password(DEMO_PASSWORD), org_id=orgs[org_key].id)
+                u = User(id=stable_id("user", email), email=email, password_hash=hash_password(DEMO_PASSWORD), org_id=orgs[org_key].id)
                 u.roles = [roles[r] for r in role_names]
                 db.add(u)
                 db.flush()
@@ -137,16 +149,16 @@ def seed(verbose: bool = True) -> None:
         for code, name, lat, lon, cap, scap, alt in STATIONS:
             st = db.execute(select(WeighingStation).where(WeighingStation.code == code)).scalar_one_or_none()
             if st is None:
-                st = WeighingStation(code=code, name=name, lat=lat, lon=lon, capacity_per_hour=cap, static_capacity_per_hour=scap, alt_allowed=alt)
+                st = WeighingStation(id=stable_id("station", code), code=code, name=name, lat=lat, lon=lon, capacity_per_hour=cap, static_capacity_per_hour=scap, alt_allowed=alt)
                 db.add(st)
                 db.flush()
                 for lane_no in (1, 2):
-                    lane = Lane(station_id=st.id, lane_no=lane_no, type="wim_highspeed", direction="inbound" if lane_no == 1 else "outbound",
+                    lane = Lane(id=stable_id("lane", code, str(lane_no)), station_id=st.id, lane_no=lane_no, type="wim_highspeed", direction="inbound" if lane_no == 1 else "outbound",
                                 device_id=f"gw-{code.lower()}-l{lane_no}", calibration_valid_to=utcnow() + timedelta(days=150))
                     db.add(lane)
                     db.flush()
                     for i, (kind, pos) in enumerate(DEFAULT_LANE_SENSORS):
-                        sensor = Sensor(lane_id=lane.id, kind=kind, channel=i, install_position_m=pos, serial=f"{code}-L{lane_no}-{kind[:4].upper()}-{i:02d}")
+                        sensor = Sensor(id=stable_id("sensor", code, str(lane_no), str(i)), lane_id=lane.id, kind=kind, channel=i, install_position_m=pos, serial=f"{code}-L{lane_no}-{kind[:4].upper()}-{i:02d}")
                         db.add(sensor)
                         if kind in ("piezo_quartz", "bending_plate"):
                             db.flush()
@@ -155,7 +167,7 @@ def seed(verbose: bool = True) -> None:
                                                      valid_from=utcnow() - timedelta(days=30), valid_to=utcnow() + timedelta(days=150),
                                                      notes="seeded demo calibration (not a real calibration)"))
                 if scap:
-                    db.add(Lane(station_id=st.id, lane_no=9, type="static", direction="inbound", device_id=f"static-{code.lower()}"))
+                    db.add(Lane(id=stable_id("lane", code, "9"), station_id=st.id, lane_no=9, type="static", direction="inbound", device_id=f"static-{code.lower()}"))
                 db.add(QueueRecord(station_id=st.id, ts=utcnow(), kind="observed", queue_len=12, avg_wait_s=900, utilisation=0.6, arrivals_per_hour=cap * 0.6, source="simulated"))
             stations[code] = st
 
@@ -163,7 +175,7 @@ def seed(verbose: bool = True) -> None:
         for key in ("simba", "pwani"):
             f = db.execute(select(Fleet).where(Fleet.org_id == orgs[key].id)).scalar_one_or_none()
             if f is None:
-                f = Fleet(org_id=orgs[key].id, name=f"{orgs[key].name} main fleet")
+                f = Fleet(id=stable_id("fleet", key), org_id=orgs[key].id, name=f"{orgs[key].name} main fleet")
                 db.add(f)
                 db.flush()
             fleets[key] = f
@@ -172,7 +184,7 @@ def seed(verbose: bool = True) -> None:
         for plate, org_key, cfg, tare, gvm, payload, body, epc, lat, lon in VEHICLES:
             v = db.execute(select(Vehicle).where(Vehicle.plate == plate)).scalar_one_or_none()
             if v is None:
-                v = Vehicle(org_id=orgs[org_key].id, fleet_id=fleets[org_key].id, plate=plate, plate_norm=normalise_plate(plate), axle_config=cfg, class_code=f"HGV{sum(int(x) for x in cfg.split('+'))}",
+                v = Vehicle(id=stable_id("vehicle", plate), org_id=orgs[org_key].id, fleet_id=fleets[org_key].id, plate=plate, plate_norm=normalise_plate(plate), axle_config=cfg, class_code=f"HGV{sum(int(x) for x in cfg.split('+'))}",
                             tare_kg=tare, max_gvm_kg=gvm, payload_capacity_kg=payload, body_type=body, last_lat=lat, last_lon=lon, last_seen_at=utcnow())
                 db.add(v)
                 db.flush()
@@ -182,7 +194,7 @@ def seed(verbose: bool = True) -> None:
 
         wh = db.execute(select(Warehouse).where(Warehouse.org_id == orgs["icd"].id)).scalar_one_or_none()
         if wh is None:
-            wh = Warehouse(org_id=orgs["icd"].id, name="Nairobi ICD Shed 4", lat=-1.3200, lon=36.8930, dock_count=6)
+            wh = Warehouse(id=stable_id("warehouse", "icd-shed-4"), org_id=orgs["icd"].id, name="Nairobi ICD Shed 4", lat=-1.3200, lon=36.8930, dock_count=6)
             db.add(wh)
             db.flush()
 
@@ -194,7 +206,7 @@ def seed(verbose: bool = True) -> None:
             ]
             for org_key, plate, desc, ctype, origin, dest, mass, decl, seal, stage in demo:
                 v = vehicles.get(plate) if plate else None
-                s = Shipment(reference=f"KP-DEMO{len(db.new):03d}{mass % 97:02d}", owner_org_id=orgs[org_key].id, transporter_org_id=v.org_id if v else None,
+                s = Shipment(id=stable_id("shipment", desc), reference=f"KP-DEMO{(mass // 100) % 1000:03d}{mass % 97:02d}", owner_org_id=orgs[org_key].id, transporter_org_id=v.org_id if v else None,
                              vehicle_id=v.id if v else None, warehouse_id=wh.id if dest == "Nairobi ICD" else None, description=desc, cargo_type=ctype,
                              origin=origin, destination=dest, origin_lat=-4.05, origin_lon=39.65, dest_lat=-1.32 if "Nairobi" in dest else -0.30, dest_lon=36.89 if "Nairobi" in dest else 36.07,
                              declared_mass_kg=mass, stage=stage)
