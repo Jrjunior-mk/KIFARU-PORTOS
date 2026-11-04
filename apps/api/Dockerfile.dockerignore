@@ -1,0 +1,25 @@
+# Applied by BuildKit when building with `-f apps/api/Dockerfile` from the repo root.
+# Keeps the venv, git history, node_modules and local databases out of the build context.
+**/.git
+**/.venv
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/*.egg-info
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/objects
+**/.env
+**/.env.*
+!**/.env.example
+docs
+firmware
+infra
+apps/web
+apps/mobile
+.github

@@ -115,3 +115,27 @@ def test_rate_limit_enforced(client, monkeypatch):
     assert 429 in codes
     monkeypatch.setattr(s, "rate_limit_per_minute", 100000)
     deps._windows.clear()
+
+
+def test_websocket_clearance_events_are_tenant_scoped(client, operator, transporter, other_transporter):
+    """A clearance decision for transporter A's truck must not be delivered to transporter B's socket, but must reach A's."""
+    sts = client.get(f"{API}/stations", headers=h(operator)).json()
+    lane = next(ln for s in sts for ln in s["lanes"] if ln["type"] == "wim_highspeed")
+    mine = client.get(f"{API}/fleet/vehicles", headers=h(transporter)).json()[0]
+    tok_a = transporter["Authorization"].split(" ")[1]
+    tok_b = other_transporter["Authorization"].split(" ")[1]
+    with client.websocket_connect(f"/ws/events?token={tok_a}&types=clearance.decided") as ws_a, client.websocket_connect(f"/ws/events?token={tok_b}&types=clearance.decided") as ws_b:
+        ws_a.receive_json()
+        ws_b.receive_json()
+        client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "vehicle_id": mine["id"], "seed": 4242, "sensor_fault_prob": 0.0})
+        msg_a = ws_a.receive_json()
+        assert msg_a["type"] == "clearance.decided" and msg_a["org_id"] == transporter["_org"] and msg_a["payload"]["vehicle_id"] == mine["id"]
+        assert msg_a["payload"]["instruction"] and msg_a["payload"]["ticket_qr_token"]
+        # B must only ever get a keep-alive ping, never A's decision
+        import threading
+
+        got: list = []
+        t = threading.Thread(target=lambda: got.append(ws_b.receive_json()), daemon=True)
+        t.start()
+        t.join(timeout=3)
+        assert not got or got[0]["type"] != "clearance.decided"

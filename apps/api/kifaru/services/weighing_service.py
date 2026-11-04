@@ -30,6 +30,12 @@ from . import identity as identity_svc
 from . import ledger, tickets
 from .limits import DEFAULT_LIMITS
 
+INSTRUCTIONS = {
+    "GREEN": "Continue — no stop required",
+    "AMBER": "Proceed to the static scale for verification",
+    "RED": "Stop for inspection",
+}
+
 
 def _lane_calibration_valid(lane: Lane, at: datetime) -> bool:
     if lane.calibration_valid_to is None:
@@ -132,6 +138,7 @@ def process_lane_pass(
         EventType.TRUCK_IDENTIFIED,
         {"weighing_event_id": ev.id, "plate": vehicle.plate if vehicle else anpr_plate, "confidence": ident.confidence, "method": ident.method},
         station_id=lane.station_id,
+        org_id=vehicle.org_id if vehicle else "platform",
         source=source,
     )
 
@@ -205,25 +212,33 @@ def process_lane_pass(
         producer="clearance-engine",
     )
 
+    # Tenant scoping: vehicle-level events are tagged with the owning organisation so WebSocket clients of other
+    # transporters never receive them. Unregistered vehicles are tagged "platform" (visible to platform-wide roles only).
+    org_id = vehicle.org_id if vehicle else "platform"
     payload = {
         "weighing_event_id": ev.id,
         "decision_id": dec.id,
         "decision": dec.decision,
+        "instruction": INSTRUCTIONS[dec.decision],
         "plate": vehicle.plate if vehicle else anpr_plate,
+        "vehicle_id": vehicle.id if vehicle else None,
+        "shipment_id": shipment.id if shipment else None,
         "gvm_kg": ev.gvm_kg,
         "u_kg": ev.gvm_uncertainty_kg,
         "axle_config": ev.detected_axle_config,
         "lane_id": lane.id,
+        "ticket_id": ticket.id,
+        "ticket_qr_token": ticket.qr_token,
         "latency_ms": latency_ms,
         "source": source,
         "rules_fired": [r["rule"] for r in dec.rules_fired],
     }
-    publish(EventType.WEIGHING_COMPLETED, payload, station_id=lane.station_id, source=source)
-    publish(EventType.CLEARANCE_DECIDED, payload, station_id=lane.station_id, source=source)
+    publish(EventType.WEIGHING_COMPLETED, payload, station_id=lane.station_id, org_id=org_id, source=source)
+    publish(EventType.CLEARANCE_DECIDED, payload, station_id=lane.station_id, org_id=org_id, source=source)
     if dec.decision in ("AMBER", "RED"):
-        publish(EventType.TRUCK_DIVERTED, payload, station_id=lane.station_id, source=source)
+        publish(EventType.TRUCK_DIVERTED, payload, station_id=lane.station_id, org_id=org_id, source=source)
     else:
-        publish(EventType.TRUCK_RELEASED, payload, station_id=lane.station_id, source=source)
+        publish(EventType.TRUCK_RELEASED, payload, station_id=lane.station_id, org_id=org_id, source=source)
     if shipment:
         shipment.stage = "weighing_verification" if dec.decision != "GREEN" else shipment.stage
     return ev

@@ -83,7 +83,7 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["ops"])
     def health():
-        return {"status": "ok", "env": s.env, "version": s.api_version}
+        return {"status": "ok", "env": s.env, "version": s.api_version, "public_base_url": s.public_base_url, "limits_version": s.limits_version}
 
     @app.get("/ready", tags=["ops"])
     def ready():
