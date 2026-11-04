@@ -6,6 +6,7 @@ Mariakani and the Northern Corridor.
 
 | | |
 |---|---|
+| Live demo | https://kifaru-portos.vercel.app — demo hosting on Vercel (ephemeral database, polling instead of WebSockets); see `docs/06-operations/vercel-demo-hosting.md`. |
 | Status (2026-11-04) | Phases 1–5 implemented and tested locally; Phase 6 hardware designed (not built); Phase 7 pilot procedure written. **No cloud deployment has been performed** — it requires the owner's AWS account (see `docs/06-operations/deployment-guide.md`). |
 | Honesty rules | Every weighing record carries `source` = `live` / `simulated` / `replay`; simulated data is never shown as live. Government and commercial adapters are `mock` until authorised credentials are configured. Environmental figures are labelled *modelled*. Accuracy/latency targets remain targets until measured in Phase 7. |
 | Legal note | Axle/GVM limits in `apps/api/kifaru/services/limits.py` are configuration flagged for verification against the current EAC Vehicle Load Control Act schedule. The static scale remains the legal reference; WIM only pre-screens. |
