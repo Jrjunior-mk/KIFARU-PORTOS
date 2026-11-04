@@ -19,3 +19,5 @@ dist/
 build/
 *.egg-info/
 apps/api/seed_accounts.json
+.vercel
+.env*
