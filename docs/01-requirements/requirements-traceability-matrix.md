@@ -83,14 +83,13 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
 | CLD-01 | Provider evaluation and selection documented | MP §4 | N | 1 | `docs/02-architecture/cloud-architecture.md` | Done in this phase | Done |
-| CLD-02 | Terraform for dev/staging/prod; ECS Fargate, RDS, Redis, IoT Core, S3, CloudFront, Route53, ACM, CloudWatch, Secrets, WAF, SQS | MP §4 | N | 2 | `infra/terraform` | `terraform validate` passes; plan documented | Planned |
-| CLD-03 | Actual deployment verified | MP §4 | N | 2 | — | **Blocked: requires owner's AWS account credentials** | Blocked |
-| CLD-04 | Edge store-and-forward during outage | MP §4 | N | 3/6 | `edge/gateway` | Outage test: no event loss | Planned |
-| CLD-05 | Docker + CI/CD (GitHub Actions) | MP §4 | N | 2 | `infra/docker`, `.github` | CI green on push | Planned |
-| RTC-01 | MQTT (devices), WebSocket (dashboards), REST, queue, webhooks, Redis | MP §5 | N | 2/3 | `kifaru/realtime` | Dashboards update without refresh | Done (REST, WS, in-process/Redis bus; MQTT worker in progress) |
+| CLD-02 | Terraform for dev/staging/prod; ECS Fargate, RDS, Redis, IoT Core, S3, CloudFront, Route53, ACM, CloudWatch, Secrets, WAF, SQS | MP §4 | N | 2 | `infra/terraform` | `terraform validate` passes; plan documented | Done (12 Terraform modules, 3 env roots + bootstrap; fmt and validate pass; no apply without owner AWS account) |
+| CLD-03 | Actual deployment verified | MP §4 | N | 2 | — | **Blocked: requires owner's AWS account credentials** | Blocked: requires owner's AWS account; deployment guide ready |
+| CLD-04 | Edge store-and-forward during outage | MP §4 | N | 3/6 | `edge/gateway` | Outage test: no event loss | In progress (gateway outbox in edge/gateway; HIL test Phase 6) |
+| CLD-05 | Docker + CI/CD (GitHub Actions) | MP §4 | N | 2 | `infra/docker`, `.github` | CI green on push | Done (Dockerfiles, Compose, GitHub Actions ci.yml + deploy.yml with OIDC; images not built locally — no Docker) |
+| RTC-01 | MQTT (devices), WebSocket (dashboards), REST, queue, webhooks, Redis | MP §5 | N | 2/3 | `kifaru/realtime` | Dashboards update without refresh | Done (REST, WS, Redis fan-in/out, MQTT and SQS ingest workers) |
 | RTC-02 | 13 event categories | MP §5 | N | 2 | `kifaru/events` | Enum + schema per event | Done |
-| INT-01 | Adapters: KeNHA, KPA, KRA, NTSA, customs, fleet mgmt, WMS, payments, SMS/email, maps, telematics — mock by default | MP §5 | N | 5 | `kifaru/integrations` | Adapter interface; health endpoint; no fabricated endpoints | Planned |
-
+| INT-01 | Adapters: KeNHA, KPA, KRA, NTSA, customs, fleet mgmt, WMS, payments, SMS/email, maps, telematics — mock by default | MP §5 | N | 5 | `kifaru/integrations` | Adapter interface; health endpoint; no fabricated endpoints | Done (12 adapters registered, mock by default, mode switch + health endpoint; no real endpoints fabricated) |
 ## K. Applications, database, twin, hardware, security, testing, docs
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
@@ -99,9 +98,9 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 | APP-08 | Driver app: no phone interaction while driving (voice/large-tile, auto-advance) | MP §7 | N | 3 | `apps/mobile` | UX review checklist | Planned |
 | DB-01 | Normalised schema for all 30 listed entities, PII separated, indexes, migrations, retention | MP §8 | N | 2 | `apps/api/alembic`, `docs/.../database-erd.md` | Alembic upgrade head clean; PII in `pii` schema | Done (Alembic 0001 verified up/down on SQLite; PostgreSQL run pending) |
 | DT-01 | Three.js port twin bound to live events; simulation-mode banner | MP §9 | N | 5 | `apps/web/twin` | Banner when source is not live | Planned |
-| DT-02 | SimPy/SUMO scenarios (+20/30/50 %, failure, inspection rate, capacity, release delay, slot policies) with comparative reports | MP §9 | N | 5 | `packages/simulation` | CLI produces comparison table | Planned |
+| DT-02 | SimPy/SUMO scenarios (+20/30/50 %, failure, inspection rate, capacity, release delay, slot policies) with comparative reports | MP §9 | N | 5 | `packages/simulation` | CLI produces comparison table | Done (SimPy, 11 scenarios, comparison report with CIs; SUMO adapter degrades gracefully) |
 | HW-01..15 | 15 hardware deliverables with real calculations; lab rig distinguished from certified equipment | MP §10 | N | 1 (arch), 6 (detail) | `docs/03-hardware` | Calculations reproducible | Planned |
-| SEC-01 | RBAC, MFA (privileged), Argon2, TLS, encryption at rest, device certs, audit, rate limit, validation, sessions, backup encryption, retention, privacy-by-design, DPA 2019 | MP §11 | N | 2+ | `kifaru/auth`, docs | Threat model doc; tests | In progress (RBAC, MFA, Argon2id, JWT rotation, audit, rate limit, validation, pii schema done; TLS/KMS/device certs in infra) |
-| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | In progress (unit, API, security, DB migration, load harness done; E2E/outage/HIL pending) |
+| SEC-01 | RBAC, MFA (privileged), Argon2, TLS, encryption at rest, device certs, audit, rate limit, validation, sessions, backup encryption, retention, privacy-by-design, DPA 2019 | MP §11 | N | 2+ | `kifaru/auth`, docs | Threat model doc; tests | Done for Phase 2 (threat model, controls catalogue, DPIA, IR plan; PII encryption, key pinning, MFA enrolment, deployment guard); TLS/KMS/device certs in Terraform |
+| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | In progress (57 API/security/worker, 24 DSP, 8 agent, 15 simulation tests; migrations on SQLite+PostgreSQL; load harness; E2E/outage/HIL pending) |
 | TST-02 | Targets: latency 2 s, WIM ±5 % at 95 %, false-clear 1 %, identity 97 %, availability 99.9 %, stops −50 % — remain targets until measured | MP §12 | N | 7 | benchmarks | Reported with evidence only | Planned |
-| DOC-01 | 42-section engineering report | MP §13 | N | 7 (draft from 1) | `docs/05-report` | All sections present | Planned |
+| DOC-01 | 42-section engineering report | MP §13 | N | 7 (draft from 1) | `docs/05-report` | All sections present | Done (draft: 42-section engineering report, docs/05-report) |

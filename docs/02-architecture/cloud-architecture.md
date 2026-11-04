@@ -89,7 +89,7 @@ both `occurred_at` and `received_at`.
 2. A registered domain and Route 53 hosted zone.
 3. Africa's Talking (or equivalent) SMS account; SES production access.
 4. ODPC registration decision and signed privacy notice.
-5. Approval of monthly budget (dev ≈ USD 60, staging ≈ USD 150, prod ≈ USD 300–400 before IoT/data egress).
+5. Approval of monthly budget. The itemised estimate in `docs/06-operations/deployment-guide.md` §9 (including NAT gateways, VPC endpoints, WAF and CloudWatch) is approximately USD 120 (dev), 240 (staging) and 540–580 (prod) before IoT message volume and data egress; the provider-evaluation figure above (USD 250–400) excluded those shared network costs. Cost levers are listed in the deployment guide.
 
 Until these are provided, `infra/terraform` is validated (`terraform validate`, `fmt`) and `plan` is documented, but **no live
 deployment is claimed**. The platform runs end-to-end locally with Docker Compose (PostgreSQL, Redis, EMQX) using the same images.
