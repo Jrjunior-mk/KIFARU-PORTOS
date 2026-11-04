@@ -39,11 +39,7 @@ def resolve(db: Session, anpr_plate: str | None, anpr_conf: float | None, rfid_e
     anpr_vehicle = None
     if anpr_plate:
         norm = normalise_plate(anpr_plate)
-        rows = db.execute(select(Vehicle)).scalars().all()
-        for v in rows:
-            if normalise_plate(v.plate) == norm:
-                anpr_vehicle = v
-                break
+        anpr_vehicle = db.execute(select(Vehicle).where(Vehicle.plate_norm == norm)).scalars().first()
     rfid_vehicle = None
     if rfid_epc:
         tag = db.execute(select(RfidTag).where(RfidTag.epc == rfid_epc, RfidTag.revoked_at.is_(None))).scalar_one_or_none()

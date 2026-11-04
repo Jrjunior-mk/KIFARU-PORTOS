@@ -1,0 +1,11 @@
+# Shared lint configuration for all Python packages in the monorepo.
+line-length = 160
+target-version = "py312"
+extend-exclude = [".venv", "alembic/versions"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = ["E501", "B008", "B904", "UP017"]
+
+[lint.isort]
+known-first-party = ["kifaru", "kifaru_wim_dsp", "kifaru_ai_agents", "kifaru_sim"]

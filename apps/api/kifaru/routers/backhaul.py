@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from kifaru_ai_agents.backhaul_matcher import BackhaulMatchingAgent
 
-from ..deps import CurrentUser, DbDep, audit, org_scope, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..events import EventType, publish
 from ..models import BackhaulMatch, BackhaulOffer, DeliveryRecord, Organization, Vehicle, utcnow
 from ..services import ledger

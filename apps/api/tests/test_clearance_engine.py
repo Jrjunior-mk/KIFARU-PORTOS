@@ -11,7 +11,7 @@ from kifaru.services.limits import DEFAULT_LIMITS
 
 
 def _m(loads, groups, u_frac=0.03, flags=None, cfg="1+1+2", health=None):
-    axles = [AxleInput(i, l, l * u_frac * 2, g) for i, (l, g) in enumerate(zip(loads, groups, strict=True))]
+    axles = [AxleInput(i, load, load * u_frac * 2, g) for i, (load, g) in enumerate(zip(loads, groups, strict=True))]
     gvm = sum(loads)
     return MeasurementInput(gvm, (sum((a.u_kg) ** 2 for a in axles)) ** 0.5, axles, cfg, flags or [], health or {})
 

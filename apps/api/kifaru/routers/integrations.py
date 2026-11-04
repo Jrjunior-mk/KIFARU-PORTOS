@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..deps import CurrentUser, DbDep, audit, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, require_roles
 from ..models import ApiIntegration, utcnow
 
 log = structlog.get_logger(__name__)

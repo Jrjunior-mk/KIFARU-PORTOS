@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..deps import CurrentUser, DbDep, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, require_roles
 from ..events import publish
 from ..models import ApiIntegration, Notification, User, utcnow
 

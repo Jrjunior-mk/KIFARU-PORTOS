@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 
-from ..deps import CurrentUser, DbDep, audit, org_scope, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..events import EventType, publish
 from ..models import (
     SHIPMENT_STAGES,

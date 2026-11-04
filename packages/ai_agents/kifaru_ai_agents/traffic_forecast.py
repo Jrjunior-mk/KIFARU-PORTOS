@@ -41,7 +41,7 @@ class TrafficForecastAgent(Agent):
         series = inputs["series"]
         horizons = [int(h) for h in inputs["horizons_min"]]
         cap = float(inputs.get("capacity_per_hour", 120))
-        now = inputs.get("now") or datetime.now(UTC)
+        inputs.get("now") or datetime.now(UTC)
         warnings: list[str] = []
         if not series:
             out = {str(h): {"queue_len": 0.0, "queue_len_lower": 0.0, "queue_len_upper": 0.0, "arrivals_per_hour": 0.0} for h in horizons}

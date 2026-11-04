@@ -5,15 +5,27 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from ..schemas.common import Email
 from sqlalchemy import func, select, text
 
 from kifaru_ai_agents.orchestrator import Orchestrator
 
 from ..config import get_settings
-from ..deps import CurrentUser, DbDep, audit, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, require_roles
 from ..events import bus
-from ..models import ROLE_NAMES, AuditEvent, Incident, LedgerEvent, Organization, Role, User, UserPII, WeighingEvent, WeighingStation, utcnow
+from ..models import (
+    ROLE_NAMES,
+    AuditEvent,
+    Incident,
+    LedgerEvent,
+    Organization,
+    Role,
+    User,
+    UserPII,
+    WeighingEvent,
+    WeighingStation,
+    utcnow,
+)
+from ..schemas.common import Email
 from ..security import hash_password, public_key_b64
 from ..services import ledger
 

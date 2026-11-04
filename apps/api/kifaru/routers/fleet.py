@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from ..deps import CurrentUser, DbDep, audit, org_scope, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..models import Driver, DriverPII, Fleet, Organization, RfidTag, Trailer, Vehicle, utcnow
 from ..services.identity import normalise_plate
 
@@ -123,11 +123,10 @@ def create_vehicle(body: VehicleIn, db: DbDep, p: Principal = Depends(FLEET_WRIT
     if not p.org_id:
         raise HTTPException(400, "User has no organisation")
     plate = body.plate.upper().strip()
-    for existing in db.execute(select(Vehicle)).scalars():
-        if normalise_plate(existing.plate) == normalise_plate(plate):
-            raise HTTPException(409, "Plate already registered")
+    if db.execute(select(Vehicle).where(Vehicle.plate_norm == normalise_plate(plate))).scalars().first():
+        raise HTTPException(409, "Plate already registered")
     v = Vehicle(
-        org_id=p.org_id, fleet_id=body.fleet_id, plate=plate, make=body.make, model=body.model, axle_config=body.axle_config,
+        org_id=p.org_id, fleet_id=body.fleet_id, plate=plate, plate_norm=normalise_plate(plate), make=body.make, model=body.model, axle_config=body.axle_config,
         class_code=f"HGV{sum(int(x) for x in body.axle_config.split('+'))}", tare_kg=body.tare_kg, max_gvm_kg=body.max_gvm_kg,
         payload_capacity_kg=body.payload_capacity_kg, body_type=body.body_type,
     )

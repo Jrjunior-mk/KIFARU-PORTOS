@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
 from ..config import get_settings
-from ..deps import CurrentUser, DbDep, audit, org_scope, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..events import EventType, publish
 from ..models import ClearanceDecision, Lane, Vehicle, WeighingEvent
 from ..services import ledger, tickets
@@ -80,11 +80,14 @@ class WeighingOut(BaseModel):
     decision: DecisionOut | None
 
 
-def _out(db, ev: WeighingEvent) -> WeighingOut:
+def _out(db, ev: WeighingEvent, plates: dict[str, str] | None = None) -> WeighingOut:
     plate = None
     if ev.vehicle_id:
-        v = db.get(Vehicle, ev.vehicle_id)
-        plate = v.plate if v else None
+        if plates is not None:
+            plate = plates.get(ev.vehicle_id)
+        else:
+            v = db.get(Vehicle, ev.vehicle_id)
+            plate = v.plate if v else None
     elif ev.identity:
         plate = ev.identity.anpr_plate
     d = ev.decision
@@ -118,7 +121,10 @@ def list_events(p: CurrentUser, db: DbDep, station_id: str | None = None, vehicl
     scope = org_scope(p)
     if scope:
         q = q.join(Vehicle, Vehicle.id == WeighingEvent.vehicle_id).where(Vehicle.org_id == scope)
-    return [_out(db, e) for e in db.execute(q).scalars()]
+    rows = db.execute(q).scalars().all()
+    ids = {e.vehicle_id for e in rows if e.vehicle_id}
+    plates = {v.id: v.plate for v in db.execute(select(Vehicle).where(Vehicle.id.in_(ids))).scalars()} if ids else {}
+    return [_out(db, e, plates) for e in rows]
 
 
 @router.get("/events/{event_id}", response_model=WeighingOut)

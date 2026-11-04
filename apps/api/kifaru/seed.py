@@ -35,6 +35,7 @@ from .models import (
 from .routers.integrations import ensure_registry
 from .routers.stations import DEFAULT_LANE_SENSORS
 from .security import hash_password
+from .services.identity import normalise_plate
 
 DEMO_PASSWORD = "***REMOVED***"
 
@@ -144,7 +145,7 @@ def seed(verbose: bool = True) -> None:
         for plate, org_key, cfg, tare, gvm, payload, body, epc, lat, lon in VEHICLES:
             v = db.execute(select(Vehicle).where(Vehicle.plate == plate)).scalar_one_or_none()
             if v is None:
-                v = Vehicle(org_id=orgs[org_key].id, fleet_id=fleets[org_key].id, plate=plate, axle_config=cfg, class_code=f"HGV{sum(int(x) for x in cfg.split('+'))}",
+                v = Vehicle(org_id=orgs[org_key].id, fleet_id=fleets[org_key].id, plate=plate, plate_norm=normalise_plate(plate), axle_config=cfg, class_code=f"HGV{sum(int(x) for x in cfg.split('+'))}",
                             tare_kg=tare, max_gvm_kg=gvm, payload_capacity_kg=payload, body_type=body, last_lat=lat, last_lon=lon, last_seen_at=utcnow())
                 db.add(v)
                 db.flush()
@@ -184,7 +185,7 @@ def seed(verbose: bool = True) -> None:
         ensure_registry(db)
         db.commit()
     if verbose:
-        print("Seed complete. Demo accounts (password for all: %s):" % DEMO_PASSWORD)
+        print(f"Seed complete. Demo accounts (password for all: {DEMO_PASSWORD}):")
         for email, _, roles_, _ in DEMO_USERS:
             print(f"  {email:40s} {', '.join(roles_)}")
 

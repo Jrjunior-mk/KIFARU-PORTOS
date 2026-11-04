@@ -73,11 +73,11 @@ def test_stations_seeded_with_lanes_and_sensors(client, operator):
 def _lane(client, auth, code="MRK"):
     sts = client.get(f"{API}/stations", headers=h(auth)).json()
     st = next(s for s in sts if s["code"] == code)
-    return st, next(l for l in st["lanes"] if l["type"] == "wim_highspeed")
+    return st, next(ln for ln in st["lanes"] if ln["type"] == "wim_highspeed")
 
 
 def test_simulate_pass_produces_decision_ticket_and_ledger(client, operator, auditor):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "count": 12, "seed": 7, "sensor_fault_prob": 0.0, "unregistered_prob": 0.0, "clone_prob": 0.0, "anpr_misread_prob": 0.0, "rfid_missing_prob": 0.0})
     assert r.status_code == 201, r.text
     evs = r.json()
@@ -109,7 +109,7 @@ def test_simulate_pass_produces_decision_ticket_and_ledger(client, operator, aud
 
 
 def test_forced_overload_is_red_and_static_verify_issues_certified_ticket(client, operator):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     vehicles = client.get(f"{API}/fleet/vehicles", headers=h(operator)).json()
     v = next(x for x in vehicles if x["axle_config"] == "1+1+2")
     r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "vehicle_id": v["id"], "force_gvm_kg": 52000, "seed": 3, "sensor_fault_prob": 0.0, "anpr_misread_prob": 0.0, "rfid_missing_prob": 0.0, "clone_prob": 0.0})
@@ -128,7 +128,7 @@ def test_forced_overload_is_red_and_static_verify_issues_certified_ticket(client
 
 
 def test_sensor_fault_never_green(client, operator):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "count": 6, "seed": 11, "sensor_fault_prob": 1.0, "unregistered_prob": 0.0})
     for ev in r.json():
         assert ev["decision"]["decision"] != "GREEN"
@@ -136,7 +136,7 @@ def test_sensor_fault_never_green(client, operator):
 
 
 def test_unregistered_vehicle_is_amber(client, operator):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "count": 3, "seed": 5, "unregistered_prob": 1.0, "sensor_fault_prob": 0.0, "overload_prob": 0.0})
     for ev in r.json():
         assert ev["vehicle_id"] is None and ev["decision"]["decision"] in ("AMBER", "RED")
@@ -144,7 +144,7 @@ def test_unregistered_vehicle_is_amber(client, operator):
 
 
 def test_edge_ingest_is_idempotent(client, operator):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     from ulid import ULID
 
     eid = str(ULID())
@@ -175,7 +175,7 @@ def test_fleet_crud_and_watchlist_red(client, transporter, admin, operator):
     v = r.json()
     assert client.post(f"{API}/fleet/vehicles", headers=h(transporter), json={"plate": "kdh777z", "axle_config": "1+2+3", "tare_kg": 16000}).status_code == 409
     assert client.post(f"{API}/fleet/vehicles/{v['id']}/watchlist", headers=h(admin), json={"reason": "KRA alert 2026/11"}).json()["watchlisted"] is True
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     ev = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "vehicle_id": v["id"], "seed": 1, "overload_prob": 0.0, "sensor_fault_prob": 0.0, "anpr_misread_prob": 0.0, "rfid_missing_prob": 0.0}).json()[0]
     assert ev["decision"]["decision"] == "RED" and any(x["rule"] == "WATCHLIST" for x in ev["decision"]["rules_fired"])
     assert client.post(f"{API}/fleet/vehicles/{v['id']}/position", headers=h(transporter), json={"lat": -3.9, "lon": 39.5}).json()["last_lat"] == -3.9
@@ -294,7 +294,7 @@ def test_admin_users_audit_incidents_agents(client, admin):
 def test_calibration_expiry_blocks_green(client, admin, operator):
     sts = client.get(f"{API}/stations", headers=h(admin)).json()
     ath = next(s for s in sts if s["code"] == "ATH")
-    lane = next(l for l in ath["lanes"] if l["type"] == "wim_highspeed")
+    lane = next(ln for ln in ath["lanes"] if ln["type"] == "wim_highspeed")
     piezo = next(s for s in lane["sensors"] if s["kind"] == "piezo_quartz")
     r = client.post(f"{API}/stations/sensors/{piezo['id']}/calibrations", headers=h(operator), json={"method": "reference_vehicle", "reference_mass_kg": 30000, "gain": 1.01, "valid_days": 90})
     assert r.status_code == 201
@@ -306,7 +306,7 @@ def test_calibration_expiry_blocks_green(client, admin, operator):
 
 
 def test_websocket_receives_live_events(client, operator):
-    st, lane = _lane(client, operator)
+    _st, lane = _lane(client, operator)
     token = operator["Authorization"].split(" ")[1]
     with client.websocket_connect(f"/ws/events?token={token}&types=clearance.decided") as ws:
         hello = ws.receive_json()

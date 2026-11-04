@@ -11,7 +11,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import get_settings
-from .routers import admin, auth, backhaul, environment, fleet, integrations, notifications, queue, shipments, stations, tickets, weighing, ws
+from .routers import (
+    admin,
+    auth,
+    backhaul,
+    environment,
+    fleet,
+    integrations,
+    notifications,
+    queue,
+    shipments,
+    stations,
+    tickets,
+    weighing,
+    ws,
+)
 
 structlog.configure(processors=[structlog.processors.TimeStamper(fmt="iso"), structlog.processors.add_log_level, structlog.processors.JSONRenderer()])
 log = structlog.get_logger("kifaru.api")

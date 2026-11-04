@@ -42,7 +42,7 @@ def forecast_station(st: WeighingStation, history: list[QueueRecord]) -> list[Qu
     agent = TrafficForecastAgent()
     series = [{"ts": r.ts, "queue_len": r.queue_len, "arrivals_per_hour": r.arrivals_per_hour, "avg_wait_s": r.avg_wait_s} for r in history]
     res = agent.run({"series": series, "horizons_min": list(HORIZONS), "capacity_per_hour": st.capacity_per_hour, "now": now})
-    lanes = max(1, len([l for l in st.lanes if l.type != "static"]))
+    lanes = max(1, len([ln for ln in st.lanes if ln.type != "static"]))
     for h in HORIZONS:
         f = res.output["forecasts"][str(h)]
         arrivals = f["arrivals_per_hour"]
@@ -52,12 +52,12 @@ def forecast_station(st: WeighingStation, history: list[QueueRecord]) -> list[Qu
                 station_id=st.id,
                 ts=now + timedelta(minutes=h),
                 kind=f"forecast_{h}",
-                queue_len=int(round(f["queue_len"])),
-                avg_wait_s=int(round(wait)),
+                queue_len=round(f["queue_len"]),
+                avg_wait_s=round(wait),
                 utilisation=min(1.0, arrivals / max(1, st.capacity_per_hour)),
                 arrivals_per_hour=float(arrivals),
-                lower=int(round(f["queue_len_lower"])),
-                upper=int(round(f["queue_len_upper"])),
+                lower=round(f["queue_len_lower"]),
+                upper=round(f["queue_len_upper"]),
                 model_version=res.output["model_version"],
                 source="forecast",
             )

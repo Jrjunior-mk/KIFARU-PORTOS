@@ -26,6 +26,7 @@ class Vehicle(ULIDPk, Timestamped, Base):
     fleet_id: Mapped[str | None] = mapped_column(CHAR(26), ForeignKey("core.fleets.id"), index=True)
     org_id: Mapped[str] = mapped_column(CHAR(26), ForeignKey("core.organizations.id"), index=True)
     plate: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    plate_norm: Mapped[str | None] = mapped_column(String(16), index=True)  # upper, alphanumerics only (ANPR matching)
     make: Mapped[str | None] = mapped_column(String(60))
     model: Mapped[str | None] = mapped_column(String(60))
     axle_config: Mapped[str] = mapped_column(String(16), default="1+1")

@@ -6,9 +6,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from ..deps import CurrentUser, DbDep, audit, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, require_roles
 from ..events import EventType, publish
-from ..models import SENSOR_KINDS, CalibrationRecord, ClearanceDecision, Incident, Lane, QueueRecord, Sensor, WeighingEvent, WeighingStation, utcnow
+from ..models import (
+    SENSOR_KINDS,
+    CalibrationRecord,
+    ClearanceDecision,
+    Incident,
+    Lane,
+    QueueRecord,
+    Sensor,
+    WeighingEvent,
+    WeighingStation,
+    utcnow,
+)
 
 router = APIRouter(prefix="/stations", tags=["stations"])
 ADMIN = require_roles("platform_admin")
@@ -68,9 +79,9 @@ def _sensor_out(s: Sensor) -> SensorOut:
                      health_reason=s.health_reason, last_reading_at=s.last_reading_at, calibration_valid_to=latest)
 
 
-def _lane_out(l: Lane) -> LaneOut:
-    return LaneOut(id=l.id, lane_no=l.lane_no, type=l.type, direction=l.direction, status=l.status, device_id=l.device_id,
-                   calibration_valid_to=l.calibration_valid_to, sensors=[_sensor_out(s) for s in l.sensors])
+def _lane_out(ln: Lane) -> LaneOut:
+    return LaneOut(id=ln.id, lane_no=ln.lane_no, type=ln.type, direction=ln.direction, status=ln.status, device_id=ln.device_id,
+                   calibration_valid_to=ln.calibration_valid_to, sensors=[_sensor_out(s) for s in ln.sensors])
 
 
 def _station_out(db, st: WeighingStation) -> StationOut:
@@ -85,7 +96,7 @@ def _station_out(db, st: WeighingStation) -> StationOut:
         counts[d] = c
     return StationOut(id=st.id, code=st.code, name=st.name, lat=st.lat, lon=st.lon, capacity_per_hour=st.capacity_per_hour,
                       static_capacity_per_hour=st.static_capacity_per_hour, alt_allowed=st.alt_allowed, status=st.status,
-                      lanes=[_lane_out(l) for l in st.lanes], queue_len=q.queue_len if q else 0, avg_wait_s=q.avg_wait_s if q else 0,
+                      lanes=[_lane_out(ln) for ln in st.lanes], queue_len=q.queue_len if q else 0, avg_wait_s=q.avg_wait_s if q else 0,
                       utilisation=q.utilisation if q else 0.0, decisions_last_hour=counts)
 
 

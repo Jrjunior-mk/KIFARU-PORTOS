@@ -255,7 +255,7 @@ def process_pass(
 
     # --- grouping: axles closer than 2.0 m belong to the same group
     group = 1
-    for i, a in enumerate(axles):
+    for a in axles:
         a.group_no = group
         if a.spacing_to_next_m is not None and a.spacing_to_next_m >= 2.0:
             group += 1

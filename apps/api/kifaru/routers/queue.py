@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from ..deps import CurrentUser, DbDep, audit, org_scope, require_roles, Principal
+from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..events import EventType, publish
 from ..models import Appointment, QueueRecord, Vehicle, WeighingStation, utcnow
 from ..services.queue_forecast import forecast_station, slot_capacity

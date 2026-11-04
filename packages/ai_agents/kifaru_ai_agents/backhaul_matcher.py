@@ -94,7 +94,6 @@ class BackhaulMatchingAgent(Agent):
                 feasible = False
                 reasons.append(f"ETA {eta:%Y-%m-%d %H:%M} after deadline {offer['deadline']:%Y-%m-%d %H:%M}")
             remaining_h = econ["driver_max_remaining_h"] - float(t.get("driver_hours_used_h", 0.0))
-            within_hours = hours_needed <= remaining_h + 24  # allows an overnight rest; strict same-day check is advisory
             exp["driver_hours_needed"] = round(hours_needed, 1)
             exp["driver_hours_remaining_today"] = round(remaining_h, 1)
             if hours_needed > remaining_h:

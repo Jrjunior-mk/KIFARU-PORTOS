@@ -4,12 +4,12 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from ..schemas.common import Email
 from sqlalchemy import select
 
 from ..config import get_settings
 from ..deps import CurrentUser, DbDep, audit, rate_limit
 from ..models import Organization, RefreshSession, Role, User, UserPII, utcnow
+from ..schemas.common import Email
 from ..security import (
     create_access_token,
     hash_password,

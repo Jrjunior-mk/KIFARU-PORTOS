@@ -12,7 +12,14 @@ import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from kifaru_wim_dsp import ChannelCalibration, LaneGeometry, SensorModel, TruckProfile, generate_pass, process_pass
+from kifaru_wim_dsp import (
+    ChannelCalibration,
+    LaneGeometry,
+    SensorModel,
+    TruckProfile,
+    generate_pass,
+    process_pass,
+)
 from kifaru_wim_dsp.signal_gen import PROFILES
 
 from ..models import Lane, Vehicle, WeighingEvent
