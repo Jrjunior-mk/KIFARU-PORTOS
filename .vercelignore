@@ -1,0 +1,24 @@
+# Keep the Vercel upload small: only the web app and the Python API are needed.
+.venv
+.git
+node_modules
+apps/web/node_modules
+apps/web/dist
+apps/mobile
+apps/api/tests
+apps/api/alembic
+apps/api/kifaru_demo.db*
+apps/api/kifaru_dev.db*
+apps/api/seed_accounts.json
+docs
+firmware
+edge
+infra
+packages/simulation/reports
+packages/*/tests
+**/__pycache__
+**/.pytest_cache
+.ruff_cache
+*.db
+*.db-wal
+*.db-shm

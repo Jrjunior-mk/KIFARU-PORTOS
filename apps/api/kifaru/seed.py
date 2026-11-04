@@ -59,8 +59,13 @@ def _accounts_file() -> Path:
     raise FileNotFoundError("no seed accounts file found (seed_accounts.example.json missing)")
 
 
-ACCOUNTS_FILE = _accounts_file()
-_ACCOUNTS = json.loads(ACCOUNTS_FILE.read_text(encoding="utf8"))
+# KIFARU_SEED_ACCOUNTS_JSON (inline JSON, e.g. a hosting provider's secret env var) takes precedence over any file.
+if os.environ.get("KIFARU_SEED_ACCOUNTS_JSON"):
+    ACCOUNTS_FILE = Path("<KIFARU_SEED_ACCOUNTS_JSON>")
+    _ACCOUNTS = json.loads(os.environ["KIFARU_SEED_ACCOUNTS_JSON"])
+else:
+    ACCOUNTS_FILE = _accounts_file()
+    _ACCOUNTS = json.loads(ACCOUNTS_FILE.read_text(encoding="utf8"))
 DEMO_USERS = [(u["email"], u["full_name"], list(u["roles"]), u["org"]) for u in _ACCOUNTS["users"]]
 DEMO_PASSWORD = os.environ.get("KIFARU_SEED_PASSWORD") or _ACCOUNTS.get("password") or ("Kd-" + secrets.token_urlsafe(12))
 _PASSWORD_GENERATED = not (os.environ.get("KIFARU_SEED_PASSWORD") or _ACCOUNTS.get("password"))
