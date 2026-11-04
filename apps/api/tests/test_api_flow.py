@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from .conftest import h
+from .conftest import DEMO_PASSWORD, h
 
 API = "/api/v1"
 
@@ -197,7 +197,7 @@ def test_cargo_passport_flow(client, cargo_owner, transporter, admin):
     assert r.json()["stage"] == "at_port" and "customs_processing" in r.json()["outstanding"]
     assert client.get(f"{API}/shipments/{s['reference']}", headers=h(cargo_owner)).json()["id"] == s["id"]
     # other cargo owner cannot see it
-    other = client.post(f"{API}/auth/login", json={"email": "owner@cargo-b.invalid", "password": "***REMOVED***"}).json()
+    other = client.post(f"{API}/auth/login", json={"email": "owner@cargo-b.invalid", "password": DEMO_PASSWORD}).json()
     assert client.get(f"{API}/shipments/{s['id']}", headers={"Authorization": f"Bearer {other['access_token']}"}).status_code == 404
     # seal breach -> next weighing RED
     client.post(f"{API}/shipments/{s['id']}/seal", headers=h(admin), json={"seal_id": "SEAL-T1", "status": "breached"})

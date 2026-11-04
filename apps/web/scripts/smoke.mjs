@@ -10,7 +10,8 @@
  */
 const BASE = (process.argv[2] ?? process.env.API_BASE ?? 'http://localhost:8000').replace(/\/$/, '');
 const API = `${BASE}/api/v1`;
-const PASSWORD = '***REMOVED***';
+const PASSWORD = process.env.KIFARU_SEED_PASSWORD; // the password printed by `python -m kifaru.seed`
+if (!PASSWORD) { console.error('Set KIFARU_SEED_PASSWORD to the demo password printed by the seed command'); process.exit(2); }
 let failures = 0;
 
 function ok(cond, msg) { console.log(`${cond ? 'PASS' : 'FAIL'}  ${msg}`); if (!cond) failures++; }

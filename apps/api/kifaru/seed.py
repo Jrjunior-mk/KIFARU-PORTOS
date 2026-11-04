@@ -1,10 +1,12 @@
 """Seed roles, demo organisations, users, stations, lanes, vehicles and a few shipments.
 
 Run:  python -m kifaru.seed          (idempotent; safe to re-run)
-Demo passwords are printed once and are for local development only. Production users are created via /admin/users.
+The demo password is generated (or taken from KIFARU_SEED_PASSWORD) and printed once; it is for local development only. Production users are created via /admin/users.
 """
 from __future__ import annotations
 
+import os
+import secrets
 import sys
 from datetime import timedelta
 
@@ -39,7 +41,9 @@ from .routers.stations import DEFAULT_LANE_SENSORS
 from .security import hash_password
 from .services.identity import normalise_plate
 
-DEMO_PASSWORD = "***REMOVED***"
+# The demo password is never fixed in source. Set KIFARU_SEED_PASSWORD to choose it (e.g. for a shared dev box);
+# otherwise a random one is generated for this process and printed once by the seed command.
+DEMO_PASSWORD = os.environ.get("KIFARU_SEED_PASSWORD") or ("Kd-" + secrets.token_urlsafe(12))
 
 STATIONS = [
     # code, name, lat, lon, cap/h, static cap/h, alt_allowed
@@ -109,6 +113,8 @@ def seed(verbose: bool = True) -> None:
 
         for email, full_name, role_names, org_key in DEMO_USERS:
             u = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+            if u is not None:
+                u.password_hash = hash_password(DEMO_PASSWORD)
             if u is None:
                 u = User(email=email, password_hash=hash_password(DEMO_PASSWORD), org_id=orgs[org_key].id)
                 u.roles = [roles[r] for r in role_names]
@@ -195,7 +201,8 @@ def seed(verbose: bool = True) -> None:
         ensure_registry(db)
         db.commit()
     if verbose:
-        print(f"Seed complete. Demo accounts (password for all: {DEMO_PASSWORD}):")
+        print("Seed complete. Demo accounts (local development only):")
+        print(f"  password for all demo accounts: {DEMO_PASSWORD}" + ("" if os.environ.get("KIFARU_SEED_PASSWORD") else "   (generated; re-run the seed to reset it, or set KIFARU_SEED_PASSWORD)"))
         for email, _, roles_, _ in DEMO_USERS:
             print(f"  {email:40s} {', '.join(roles_)}")
 

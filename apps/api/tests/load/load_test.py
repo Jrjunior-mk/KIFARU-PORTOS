@@ -54,7 +54,9 @@ def main():
                 time.sleep(0.2)
 
     with httpx.Client(base_url=a.base, timeout=30) as c:
-        tok = c.post(f"{API}/auth/login", json={"email": "operator@demo.invalid", "password": "***REMOVED***"}).json()["access_token"]
+        from kifaru.seed import DEMO_PASSWORD
+
+        tok = c.post(f"{API}/auth/login", json={"email": "operator@demo.invalid", "password": DEMO_PASSWORD}).json()["access_token"]
         hdr = {"Authorization": f"Bearer {tok}"}
         sts = c.get(f"{API}/stations", headers=hdr).json()
         lane = next(ln for s in sts for ln in s["lanes"] if ln["type"] == "wim_highspeed")
