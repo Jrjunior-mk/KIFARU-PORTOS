@@ -9,7 +9,8 @@ from fastapi.testclient import TestClient
 
 _tmp = tempfile.mkdtemp(prefix="kifaru-test-")
 os.environ["KIFARU_ENV"] = "test"
-os.environ["KIFARU_DATABASE_URL"] = f"sqlite:///{_tmp}/test.db"
+# Set KIFARU_TEST_DATABASE_URL=postgresql+psycopg://... to run the suite against PostgreSQL instead of SQLite.
+os.environ["KIFARU_DATABASE_URL"] = os.environ.get("KIFARU_TEST_DATABASE_URL") or f"sqlite:///{_tmp}/test.db"
 os.environ["KIFARU_JWT_SECRET"] = "test-secret-at-least-16-chars"
 os.environ["KIFARU_AUDIT_SAMPLE_RATE"] = "0.0"
 os.environ["KIFARU_RATE_LIMIT_PER_MINUTE"] = "100000"

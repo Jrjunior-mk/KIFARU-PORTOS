@@ -8,18 +8,17 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance criteria | Status |
 |---|---|---|---|---|---|---|---|
-| RCS-01 | Identify approaching trucks automatically (ANPR + RFID) | RCS; MP §2 | P | 2 (sim), 6 (hw) | `kifaru/identity`, `ai_agents/vehicle_identity` | Identity event with plate, RFID, confidence produced for every lane pass | Planned |
-| RCS-02 | Measure axle loads and GVM while moving | RCS; MP §2, M1 | E | 2 (sim), 6 (hw) | `packages/wim_dsp`, firmware | Axle loads, spacing, speed, GVM, uncertainty produced per pass | Planned |
-| RCS-03 | Evaluate measurement confidence and compliance | MP §2, M2 | E | 2 | `kifaru/clearance` | Every decision carries expanded uncertainty U (k=2) and quality flags | Planned |
-| RCS-04 | Clear eligible trucks without stops (GREEN) | RCS; MP §2 | P | 2 | `kifaru/clearance` | GREEN only when GVM+U and each axle-group+U are within legal limit, identity above threshold, sensors healthy, not watch-listed, not audit-sampled | Planned |
-| RCS-05 | Direct uncertain trucks to static verification (AMBER) | RCS; MP §2 | P | 2 | `kifaru/clearance` | AMBER when limits within margin, identity low, or quality degraded | Planned |
-| RCS-06 | Flag suspected non-compliance (RED) | RCS; MP §2 | P | 2 | `kifaru/clearance` | RED when measured minus U still exceeds limit, or watch-list / seal / declaration mismatch | Planned |
-| RCS-07 | Static weighing remains legal authority | RCS; MP §3 M2 | P | all | policy + `clearance` | No API path issues a legally binding certificate from WIM alone; ticket type `prescreen` vs `static_certified` | Planned |
-| RCS-08 | Complete evidence record per decision | MP §3 M2 | E | 2 | `kifaru/clearance`, `kifaru/ledger` | Decision row links weighing event, identity, rules fired, thresholds, sensor health, signed hash | Planned |
-| RCS-09 | Never auto-clear when quality insufficient | MP §3 M2 | E | 2 | `kifaru/clearance` | Unit test: any quality flag means not GREEN | Planned |
-| RCS-10 | Random audit selection | MP §3 M2 | N | 2 | `kifaru/clearance` | Configurable audit rate; selection logged with seed | Planned |
-| RCS-11 | Digital weighing ticket | RCS; MP §3 M5 | E | 2 | `kifaru/tickets` | Signed JSON + QR; verifiable via public endpoint | Planned |
-
+| RCS-01 | Identify approaching trucks automatically (ANPR + RFID) | RCS; MP §2 | P | 2 (sim), 6 (hw) | `kifaru/identity`, `ai_agents/vehicle_identity` | Identity event with plate, RFID, confidence produced for every lane pass | Done (simulated identity; hardware Phase 6) |
+| RCS-02 | Measure axle loads and GVM while moving | RCS; MP §2, M1 | E | 2 (sim), 6 (hw) | `packages/wim_dsp`, firmware | Axle loads, spacing, speed, GVM, uncertainty produced per pass | Done (simulated signals through DSP; hardware Phase 6) |
+| RCS-03 | Evaluate measurement confidence and compliance | MP §2, M2 | E | 2 | `kifaru/clearance` | Every decision carries expanded uncertainty U (k=2) and quality flags | Done |
+| RCS-04 | Clear eligible trucks without stops (GREEN) | RCS; MP §2 | P | 2 | `kifaru/clearance` | GREEN only when GVM+U and each axle-group+U are within legal limit, identity above threshold, sensors healthy, not watch-listed, not audit-sampled | Done |
+| RCS-05 | Direct uncertain trucks to static verification (AMBER) | RCS; MP §2 | P | 2 | `kifaru/clearance` | AMBER when limits within margin, identity low, or quality degraded | Done |
+| RCS-06 | Flag suspected non-compliance (RED) | RCS; MP §2 | P | 2 | `kifaru/clearance` | RED when measured minus U still exceeds limit, or watch-list / seal / declaration mismatch | Done |
+| RCS-07 | Static weighing remains legal authority | RCS; MP §3 M2 | P | all | policy + `clearance` | No API path issues a legally binding certificate from WIM alone; ticket type `prescreen` vs `static_certified` | Done |
+| RCS-08 | Complete evidence record per decision | MP §3 M2 | E | 2 | `kifaru/clearance`, `kifaru/ledger` | Decision row links weighing event, identity, rules fired, thresholds, sensor health, signed hash | Done |
+| RCS-09 | Never auto-clear when quality insufficient | MP §3 M2 | E | 2 | `kifaru/clearance` | Unit test: any quality flag means not GREEN | Done (tested) |
+| RCS-10 | Random audit selection | MP §3 M2 | N | 2 | `kifaru/clearance` | Configurable audit rate; selection logged with seed | Done |
+| RCS-11 | Digital weighing ticket | RCS; MP §3 M5 | E | 2 | `kifaru/tickets` | Signed JSON + QR; verifiable via public endpoint | Done |
 ## B. Module 1 — WIM infrastructure
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance criteria | Status |
@@ -28,44 +27,39 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 | WIM-02 | 5–10 kHz/channel acquisition, anti-alias, 24-bit ADC | MP M1 | R | 6 | firmware `stm32-wim-daq` | ADS131M08 at 8 kSPS/ch verified on bench | Planned |
 | WIM-03 | No HX711 on highway lane | MP M1 | R | 6 | hardware doc | BOM excludes HX711 for lane; allowed only on lab aux | Planned |
 | WIM-04 | Charge amplifier for piezo-quartz | MP M1 | N | 6 | `docs/03-hardware/analog-front-end.md` | LTspice sim + bench noise floor | Planned |
-| WIM-05 | DSP: axle detection, spacing, speed, GVM, classification, temperature and dynamic compensation, uncertainty, sensor health | MP M1 | E | 2 (python), 6 (fw) | `packages/wim_dsp` | Unit tests on synthetic + recorded signals; error vs reference reported | Planned |
+| WIM-05 | DSP: axle detection, spacing, speed, GVM, classification, temperature and dynamic compensation, uncertainty, sensor health | MP M1 | E | 2 (python), 6 (fw) | `packages/wim_dsp` | Unit tests on synthetic + recorded signals; error vs reference reported | Done (Python reference, 24 tests) |
 | WIM-06 | STM32 primary, ESP32 auxiliary | MP M1 | N | 6 | firmware | Build passes; HIL test | Planned |
-| WIM-07 | Sensor health monitoring | MP M1 | N | 2/6 | `wim_dsp.health`, `kifaru/stations` | Health states OK/DEGRADED/FAULT with reasons | Planned |
-
+| WIM-07 | Sensor health monitoring | MP M1 | N | 2/6 | `wim_dsp.health`, `kifaru/stations` | Health states OK/DEGRADED/FAULT with reasons | Done (health flags + sensor status API) |
 ## C. Module 3 — Traffic and queue intelligence
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| TRQ-01 | Forecast arrivals, queue length, utilisation, processing time at 15/30/60/120 min | MP M3 | N | 4 | `ai_agents/traffic_forecast` | Forecast endpoint returns 4 horizons with intervals; backtest MAE reported | Planned |
-| TRQ-02 | Dynamic weighing-slot allocation | MP M3 | N | 3 | `kifaru/queue` | Slot assigned to appointment; conflicts rejected | Planned |
-| TRQ-03 | Recommend authorised alternative stations | MP M3 | N | 4 | `ai_agents/queue_optimizer` | Only stations flagged `alt_allowed` recommended | Planned |
-| TRQ-04 | Notify transporters/dispatchers of slot and wait | MP M3 | N | 3 | `kifaru/notifications` | Notification record + WS push + SMS adapter | Planned |
-
+| TRQ-01 | Forecast arrivals, queue length, utilisation, processing time at 15/30/60/120 min | MP M3 | N | 4 | `ai_agents/traffic_forecast` | Forecast endpoint returns 4 horizons with intervals; backtest MAE reported | Done (HGB/Holt/persistence by data volume; backtest on real data pending) |
+| TRQ-02 | Dynamic weighing-slot allocation | MP M3 | N | 3 | `kifaru/queue` | Slot assigned to appointment; conflicts rejected | Done |
+| TRQ-03 | Recommend authorised alternative stations | MP M3 | N | 4 | `ai_agents/queue_optimizer` | Only stations flagged `alt_allowed` recommended | Done (agent; alt_allowed enforced) |
+| TRQ-04 | Notify transporters/dispatchers of slot and wait | MP M3 | N | 3 | `kifaru/notifications` | Notification record + WS push + SMS adapter | Done (WS + inbox; SMS adapter mock) |
 ## D. Module 4 — Backhaul
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| BKH-01 | Identify empty trucks / completing deliveries / return cargo | MP M4 | N | 4 | `kifaru/backhaul` | Query returns candidate trucks with capacity and location | Planned |
-| BKH-02 | Matching optimisation (payload, dims, type, compatibility, destination, extra km, deadline, fuel, driver hours, revenue) | MP M4 | N | 4 | `ai_agents/backhaul_matcher` | Deterministic score with explanation; unit tests | Planned |
-| BKH-03 | Offer, match, accept/reject, assign, track | MP M4 | N | 4 | `kifaru/backhaul` | State machine enforced in API | Planned |
-| BKH-04 | No automatic commercial assignment without user approval | MP M4 | N | 4 | `kifaru/backhaul` | Assignment requires acceptance by both parties | Planned |
-| BKH-05 | Report extra km, fuel cost, revenue, emissions avoided | MP M4 | N | 4 | `kifaru/backhaul`, `environment` | Fields present with formula reference | Planned |
-
+| BKH-01 | Identify empty trucks / completing deliveries / return cargo | MP M4 | N | 4 | `kifaru/backhaul` | Query returns candidate trucks with capacity and location | Done |
+| BKH-02 | Matching optimisation (payload, dims, type, compatibility, destination, extra km, deadline, fuel, driver hours, revenue) | MP M4 | N | 4 | `ai_agents/backhaul_matcher` | Deterministic score with explanation; unit tests | Done (tested) |
+| BKH-03 | Offer, match, accept/reject, assign, track | MP M4 | N | 4 | `kifaru/backhaul` | State machine enforced in API | Done |
+| BKH-04 | No automatic commercial assignment without user approval | MP M4 | N | 4 | `kifaru/backhaul` | Assignment requires acceptance by both parties | Done (tested) |
+| BKH-05 | Report extra km, fuel cost, revenue, emissions avoided | MP M4 | N | 4 | `kifaru/backhaul`, `environment` | Fields present with formula reference | Done |
 ## E. Module 5 — Digital cargo passport
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| DCP-01 | Unique shipment identity linking truck, trailer, container, RFID, declaration, seal, VGM, weighings, tickets, status, history | MP M5 | N | 2 | `kifaru/shipments` | Passport endpoint aggregates all links | Planned |
-| DCP-02 | QR verification | MP M5 | N | 2 | `kifaru/tickets` | Public verify endpoint validates signature | Planned |
-| DCP-03 | Signed, tamper-evident event ledger (no blockchain) | MP M5 | N | 2 | `kifaru/ledger` | Hash-chained events; chain verification endpoint | Planned |
-
+| DCP-01 | Unique shipment identity linking truck, trailer, container, RFID, declaration, seal, VGM, weighings, tickets, status, history | MP M5 | N | 2 | `kifaru/shipments` | Passport endpoint aggregates all links | Done |
+| DCP-02 | QR verification | MP M5 | N | 2 | `kifaru/tickets` | Public verify endpoint validates signature | Done (public verify + QR) |
+| DCP-03 | Signed, tamper-evident event ledger (no blockchain) | MP M5 | N | 2 | `kifaru/ledger` | Hash-chained events; chain verification endpoint | Done (chain verify endpoint, tested) |
 ## F. Module 6 — Predictive release
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| PRL-01 | Predict processing/release time with confidence range and reasons | MP M6 | N | 4 | `ai_agents/release_predictor` | Prediction with P10/P50/P90 and stage reasons | Planned |
-| PRL-02 | No claim of government data without authorised integration | MP M6 | N | all | adapters | All government adapters default to `mode=mock` and label output | Planned |
-
+| PRL-01 | Predict processing/release time with confidence range and reasons | MP M6 | N | 4 | `ai_agents/release_predictor` | Prediction with P10/P50/P90 and stage reasons | Done (priors; learns from platform history) |
+| PRL-02 | No claim of government data without authorised integration | MP M6 | N | all | adapters | All government adapters default to `mode=mock` and label output | Done (adapters mock by default) |
 ## G. Module 7 — Small cargo owner
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
@@ -77,15 +71,13 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| ENV-01 | Estimate idling fuel, empty km, detours, queue emissions, savings, CO2 | MP M8 | N | 4 | `kifaru/environment` | Formulas and factors in `docs/.../emissions-model.md`; outputs labelled *modelled* | Planned |
-
+| ENV-01 | Estimate idling fuel, empty km, detours, queue emissions, savings, CO2 | MP M8 | N | 4 | `kifaru/environment` | Formulas and factors in `docs/.../emissions-model.md`; outputs labelled *modelled* | Done (labelled modelled) |
 ## I. Module 9 — Multi-agent AI
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
 |---|---|---|---|---|---|---|---|
-| AGT-01 | Ten agents + orchestrator with responsibilities, I/O, API, confidence, errors, logging, tests, explainability | MP M9 | N | 4 | `packages/ai_agents` | Each agent implements the `Agent` protocol; orchestrator runs pipeline; tests | Planned |
-| AGT-02 | AI never overrides deterministic legal/safety rules | MP M9 | N | 2 | `kifaru/clearance` | Agent outputs are advisory inputs; rule engine is final | Planned |
-
+| AGT-01 | Ten agents + orchestrator with responsibilities, I/O, API, confidence, errors, logging, tests, explainability | MP M9 | N | 4 | `packages/ai_agents` | Each agent implements the `Agent` protocol; orchestrator runs pipeline; tests | Done (10 agents + orchestrator, tests) |
+| AGT-02 | AI never overrides deterministic legal/safety rules | MP M9 | N | 2 | `kifaru/clearance` | Agent outputs are advisory inputs; rule engine is final | Done (engine is rule-based) |
 ## J. Cloud, real-time, integrations
 
 | ID | Requirement | Source | Disp. | Phase | Component | Acceptance | Status |
@@ -95,8 +87,8 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 | CLD-03 | Actual deployment verified | MP §4 | N | 2 | — | **Blocked: requires owner's AWS account credentials** | Blocked |
 | CLD-04 | Edge store-and-forward during outage | MP §4 | N | 3/6 | `edge/gateway` | Outage test: no event loss | Planned |
 | CLD-05 | Docker + CI/CD (GitHub Actions) | MP §4 | N | 2 | `infra/docker`, `.github` | CI green on push | Planned |
-| RTC-01 | MQTT (devices), WebSocket (dashboards), REST, queue, webhooks, Redis | MP §5 | N | 2/3 | `kifaru/realtime` | Dashboards update without refresh | Planned |
-| RTC-02 | 13 event categories | MP §5 | N | 2 | `kifaru/events` | Enum + schema per event | Planned |
+| RTC-01 | MQTT (devices), WebSocket (dashboards), REST, queue, webhooks, Redis | MP §5 | N | 2/3 | `kifaru/realtime` | Dashboards update without refresh | Done (REST, WS, in-process/Redis bus; MQTT worker in progress) |
+| RTC-02 | 13 event categories | MP §5 | N | 2 | `kifaru/events` | Enum + schema per event | Done |
 | INT-01 | Adapters: KeNHA, KPA, KRA, NTSA, customs, fleet mgmt, WMS, payments, SMS/email, maps, telematics — mock by default | MP §5 | N | 5 | `kifaru/integrations` | Adapter interface; health endpoint; no fabricated endpoints | Planned |
 
 ## K. Applications, database, twin, hardware, security, testing, docs
@@ -105,11 +97,11 @@ Source "MP §n" = Master Prompt section n. "RCS" = original Rolling Clearance Sy
 |---|---|---|---|---|---|---|---|
 | APP-01..07 | Port control, weighbridge operator, transporter, driver, cargo owner, warehouse, admin dashboards — all wired to real APIs | MP §7 | N | 2–5 | `apps/web` | No decorative controls; every action hits an API | Planned |
 | APP-08 | Driver app: no phone interaction while driving (voice/large-tile, auto-advance) | MP §7 | N | 3 | `apps/mobile` | UX review checklist | Planned |
-| DB-01 | Normalised schema for all 30 listed entities, PII separated, indexes, migrations, retention | MP §8 | N | 2 | `apps/api/alembic`, `docs/.../database-erd.md` | Alembic upgrade head clean; PII in `pii` schema | Planned |
+| DB-01 | Normalised schema for all 30 listed entities, PII separated, indexes, migrations, retention | MP §8 | N | 2 | `apps/api/alembic`, `docs/.../database-erd.md` | Alembic upgrade head clean; PII in `pii` schema | Done (Alembic 0001 verified up/down on SQLite; PostgreSQL run pending) |
 | DT-01 | Three.js port twin bound to live events; simulation-mode banner | MP §9 | N | 5 | `apps/web/twin` | Banner when source is not live | Planned |
 | DT-02 | SimPy/SUMO scenarios (+20/30/50 %, failure, inspection rate, capacity, release delay, slot policies) with comparative reports | MP §9 | N | 5 | `packages/simulation` | CLI produces comparison table | Planned |
 | HW-01..15 | 15 hardware deliverables with real calculations; lab rig distinguished from certified equipment | MP §10 | N | 1 (arch), 6 (detail) | `docs/03-hardware` | Calculations reproducible | Planned |
-| SEC-01 | RBAC, MFA (privileged), Argon2, TLS, encryption at rest, device certs, audit, rate limit, validation, sessions, backup encryption, retention, privacy-by-design, DPA 2019 | MP §11 | N | 2+ | `kifaru/auth`, docs | Threat model doc; tests | Planned |
-| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | Planned |
+| SEC-01 | RBAC, MFA (privileged), Argon2, TLS, encryption at rest, device certs, audit, rate limit, validation, sessions, backup encryption, retention, privacy-by-design, DPA 2019 | MP §11 | N | 2+ | `kifaru/auth`, docs | Threat model doc; tests | In progress (RBAC, MFA, Argon2id, JWT rotation, audit, rate limit, validation, pii schema done; TLS/KMS/device certs in infra) |
+| TST-01 | Unit/integration/API/E2E/DB/load/security/fault/outage/sync/AI validation | MP §12 | N | 2+ | `apps/api/tests`, CI | CI matrix | In progress (unit, API, security, DB migration, load harness done; E2E/outage/HIL pending) |
 | TST-02 | Targets: latency 2 s, WIM ±5 % at 95 %, false-clear 1 %, identity 97 %, availability 99.9 %, stops −50 % — remain targets until measured | MP §12 | N | 7 | benchmarks | Reported with evidence only | Planned |
 | DOC-01 | 42-section engineering report | MP §13 | N | 7 (draft from 1) | `docs/05-report` | All sections present | Planned |

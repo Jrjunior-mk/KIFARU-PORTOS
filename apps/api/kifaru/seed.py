@@ -10,7 +10,7 @@ from datetime import timedelta
 
 from sqlalchemy import select
 
-from .db import get_engine, get_sessionmaker
+from .db import ensure_schemas, get_engine, get_sessionmaker
 from .models import (
     ROLE_NAMES,
     Base,
@@ -85,6 +85,7 @@ VEHICLES = [
 
 def seed(verbose: bool = True) -> None:
     engine = get_engine()
+    ensure_schemas(engine)
     Base.metadata.create_all(engine)
     Session = get_sessionmaker()
     with Session() as db:

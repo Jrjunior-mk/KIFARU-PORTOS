@@ -1,12 +1,21 @@
 [project]
 name = "kifaru-sim"
 version = "0.1.0"
-description = "SimPy weighbridge/port queue simulation and scenario comparison for KIFARU PORTOS"
+description = "SimPy weighbridge/port queue simulation and scenario comparison for KIFARU PORTOS (results are modelled, not measured)"
 requires-python = ">=3.12"
-dependencies = ["simpy>=4.1", "numpy>=1.26"]
+dependencies = ["simpy>=4.1", "numpy>=1.26", "scipy>=1.13", "kifaru-wim-dsp", "kifaru-ai-agents", "kifaru-api"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.2"]
+sumo = ["traci>=1.19", "sumolib>=1.19"]
+
+[project.scripts]
+kifaru-sim = "kifaru_sim.cli:main"
+
+[tool.uv.sources]
+kifaru-wim-dsp = { path = "../wim_dsp", editable = true }
+kifaru-ai-agents = { path = "../ai_agents", editable = true }
+kifaru-api = { path = "../../apps/api", editable = true }
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -14,3 +23,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["kifaru_sim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

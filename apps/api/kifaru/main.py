@@ -45,6 +45,10 @@ async def lifespan(app: FastAPI):
     s = get_settings()
     logging.basicConfig(level=s.log_level)
     log.info("startup", env=s.env, db="sqlite" if s.is_sqlite else "postgresql")
+    from .events import bus
+
+    if bus.start_redis_subscriber() is not None:
+        log.info("redis_subscriber_started")
     yield
     log.info("shutdown")
 

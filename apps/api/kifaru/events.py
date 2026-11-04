@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import threading
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -105,6 +106,40 @@ class EventBus:
     def recent(self, n: int = 50) -> list[dict]:
         with self._lock:
             return list(self._history[-n:])
+
+    def seen(self, event_id: str) -> bool:
+        with self._lock:
+            return any(e.get("event_id") == event_id for e in self._history)
+
+    def start_redis_subscriber(self) -> threading.Thread | None:
+        """Fan-in events published by other processes (workers, other API instances) via Redis pub/sub.
+        Events this process published itself are ignored (dedupe on event_id)."""
+        s = get_settings()
+        if not s.redis_url:
+            return None
+
+        def _loop() -> None:
+            import redis
+
+            while True:
+                try:
+                    r = redis.Redis.from_url(s.redis_url)
+                    ps = r.pubsub(ignore_subscribe_messages=True)
+                    ps.subscribe("kifaru.events")
+                    for msg in ps.listen():
+                        try:
+                            ev = json.loads(msg["data"])
+                        except Exception:
+                            continue
+                        if not self.seen(ev.get("event_id", "")):
+                            self._local_dispatch(ev)
+                except Exception as exc:  # pragma: no cover - network
+                    log.warning("redis_subscriber_reconnect", error=str(exc))
+                    time.sleep(2)
+
+        t = threading.Thread(target=_loop, name="kifaru-redis-sub", daemon=True)
+        t.start()
+        return t
 
 
 bus = EventBus()

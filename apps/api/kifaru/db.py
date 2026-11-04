@@ -63,3 +63,14 @@ def reset_engine() -> None:
         _engine.dispose()
     _engine = None
     _SessionLocal = None
+
+
+def ensure_schemas(engine: Engine) -> None:
+    """Create the core/pii/ts schemas on PostgreSQL (no-op on SQLite, where they are translated away)."""
+    if engine.dialect.name != "postgresql":
+        return
+    from sqlalchemy import text
+
+    with engine.begin() as conn:
+        for schema in ("core", "pii", "ts"):
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))

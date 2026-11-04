@@ -22,7 +22,10 @@ def upgrade() -> None:
     if bind.dialect.name == "postgresql":
         for schema in ("core", "pii", "ts"):
             op.execute(sa.text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
-        op.execute(sa.text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
+        # pgcrypto is used for column-level PII encryption (planned); skip gracefully where the server build lacks it.
+        available = bind.execute(sa.text("SELECT 1 FROM pg_available_extensions WHERE name = 'pgcrypto'")).scalar()
+        if available:
+            op.execute(sa.text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
     Base.metadata.create_all(bind=bind)
     if bind.dialect.name == "postgresql":
         # Slot capacity guard: at most capacity_per_hour/4 bookings per 15-min window is enforced in the service layer;
