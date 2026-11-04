@@ -1,0 +1,58 @@
+[project]
+name = "kifaru-api"
+version = "0.1.0"
+description = "KIFARU PORTOS backend API — rolling clearance, cargo passport, queue, backhaul"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic[email]>=2.8",
+    "pydantic-settings>=2.4",
+    "sqlalchemy>=2.0.30",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",
+    "python-ulid>=2.7",
+    "argon2-cffi>=23.1",
+    "pyjwt>=2.9",
+    "pyotp>=2.9",
+    "pynacl>=1.5",
+    "segno>=1.6",
+    "redis>=5.0",
+    "paho-mqtt>=2.1",
+    "httpx>=0.27",
+    "structlog>=24.1",
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "python-multipart>=0.0.9",
+    "kifaru-wim-dsp",
+    "kifaru-ai-agents",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[tool.uv.sources]
+kifaru-wim-dsp = { path = "../../packages/wim_dsp", editable = true }
+kifaru-ai-agents = { path = "../../packages/ai_agents", editable = true }
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["kifaru*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"

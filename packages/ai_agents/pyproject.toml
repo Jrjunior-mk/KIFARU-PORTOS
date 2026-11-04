@@ -1,0 +1,16 @@
+[project]
+name = "kifaru-ai-agents"
+version = "0.1.0"
+description = "KIFARU PORTOS cooperating AI agents and orchestrator (advisory only; never override deterministic rules)"
+requires-python = ">=3.12"
+dependencies = ["numpy>=1.26", "scikit-learn>=1.5", "pydantic>=2.8"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["kifaru_ai_agents*"]
