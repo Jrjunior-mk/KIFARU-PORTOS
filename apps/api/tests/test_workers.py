@@ -88,10 +88,10 @@ def test_malformed_messages_are_dead_lettered_without_exception(client, tmp_path
         assert db.execute(select(WeighingStation)).scalars().first() is not None
     files = list(tmp_path.glob("*.jsonl"))
     assert len(files) == 1
-    lines = [json.loads(l) for l in files[0].read_text(encoding="utf-8").splitlines()]
+    lines = [json.loads(ln) for ln in files[0].read_text(encoding="utf-8").splitlines()]
     assert len(lines) == len(cases) + 1
-    assert all("reason" in l and "raw" in l and "topic" in l for l in lines)
-    assert any("unknown device_id" in l["reason"] for l in lines) and any("validation" in l["reason"] for l in lines) and any("processing" in l["reason"] for l in lines)
+    assert all("reason" in ln and "raw" in ln and "topic" in ln for ln in lines)
+    assert any("unknown device_id" in ln["reason"] for ln in lines) and any("validation" in ln["reason"] for ln in lines) and any("processing" in ln["reason"] for ln in lines)
 
 
 def test_health_message_updates_sensor_status(client, tmp_path):
