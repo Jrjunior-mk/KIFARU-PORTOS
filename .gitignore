@@ -18,3 +18,4 @@ dist/
 .ruff_cache/
 build/
 *.egg-info/
+apps/api/seed_accounts.json

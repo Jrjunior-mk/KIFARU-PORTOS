@@ -1,0 +1,15 @@
+{
+  "_comment": "Example demo accounts for local development. Copy to apps/api/seed_accounts.json (git-ignored) and edit; add a \"password\" field or set KIFARU_SEED_PASSWORD, otherwise the seed generates one and prints it once. Never use these in production.",
+  "users": [
+    {"email": "admin@demo.invalid", "full_name": "Platform Administrator", "roles": ["platform_admin"], "org": "platform"},
+    {"email": "control@demo.invalid", "full_name": "Port Control Officer", "roles": ["port_controller"], "org": "platform"},
+    {"email": "operator@demo.invalid", "full_name": "Weighbridge Operator Mariakani", "roles": ["weighbridge_operator"], "org": "platform"},
+    {"email": "auditor@demo.invalid", "full_name": "Compliance Auditor", "roles": ["auditor"], "org": "platform"},
+    {"email": "dispatch@transporter-a.invalid", "full_name": "Simba Transporters Dispatch", "roles": ["transporter_admin", "dispatcher"], "org": "simba"},
+    {"email": "driver1@transporter-a.invalid", "full_name": "Driver Juma", "roles": ["driver"], "org": "simba"},
+    {"email": "dispatch@transporter-b.invalid", "full_name": "Pwani Haulers Admin", "roles": ["transporter_admin"], "org": "pwani"},
+    {"email": "owner@cargo-a.invalid", "full_name": "Mama Mboga Traders", "roles": ["cargo_owner"], "org": "mamambo"},
+    {"email": "owner@cargo-b.invalid", "full_name": "Nakuru Grains Ltd", "roles": ["cargo_owner"], "org": "nakuru"},
+    {"email": "wh@warehouse-a.invalid", "full_name": "Nairobi ICD Warehouse", "roles": ["warehouse_manager"], "org": "icd"}
+  ]
+}

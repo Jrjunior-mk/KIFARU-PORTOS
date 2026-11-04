@@ -14,6 +14,8 @@ os.environ["KIFARU_DATABASE_URL"] = os.environ.get("KIFARU_TEST_DATABASE_URL") o
 os.environ["KIFARU_JWT_SECRET"] = "test-secret-at-least-16-chars"
 os.environ["KIFARU_AUDIT_SAMPLE_RATE"] = "0.0"
 os.environ["KIFARU_RATE_LIMIT_PER_MINUTE"] = "100000"
+# tests always use the committed placeholder accounts, never a developer's private seed_accounts.json
+os.environ["KIFARU_SEED_ACCOUNTS"] = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "seed_accounts.example.json")
 
 from kifaru.config import get_settings  # noqa: E402
 

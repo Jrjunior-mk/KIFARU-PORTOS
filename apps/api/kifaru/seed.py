@@ -5,10 +5,12 @@ The demo password is generated (or taken from KIFARU_SEED_PASSWORD) and printed 
 """
 from __future__ import annotations
 
+import json
 import os
 import secrets
 import sys
 from datetime import timedelta
+from pathlib import Path
 
 from sqlalchemy import select
 
@@ -41,9 +43,27 @@ from .routers.stations import DEFAULT_LANE_SENSORS
 from .security import hash_password
 from .services.identity import normalise_plate
 
-# The demo password is never fixed in source. Set KIFARU_SEED_PASSWORD to choose it (e.g. for a shared dev box);
-# otherwise a random one is generated for this process and printed once by the seed command.
-DEMO_PASSWORD = os.environ.get("KIFARU_SEED_PASSWORD") or ("Kd-" + secrets.token_urlsafe(12))
+# Demo accounts are NOT part of the source tree. They come from (first match wins):
+#   1. the file named by KIFARU_SEED_ACCOUNTS,
+#   2. apps/api/seed_accounts.json (git-ignored, your private local copy),
+#   3. apps/api/seed_accounts.example.json (committed placeholders).
+# The password comes from KIFARU_SEED_PASSWORD, then the file's "password" field, otherwise it is generated for this
+# run and printed once. Nothing here is ever used in production.
+_API_DIR = Path(__file__).resolve().parent.parent
+
+
+def _accounts_file() -> Path:
+    for cand in (os.environ.get("KIFARU_SEED_ACCOUNTS"), _API_DIR / "seed_accounts.json", _API_DIR / "seed_accounts.example.json"):
+        if cand and Path(cand).is_file():
+            return Path(cand)
+    raise FileNotFoundError("no seed accounts file found (seed_accounts.example.json missing)")
+
+
+ACCOUNTS_FILE = _accounts_file()
+_ACCOUNTS = json.loads(ACCOUNTS_FILE.read_text(encoding="utf8"))
+DEMO_USERS = [(u["email"], u["full_name"], list(u["roles"]), u["org"]) for u in _ACCOUNTS["users"]]
+DEMO_PASSWORD = os.environ.get("KIFARU_SEED_PASSWORD") or _ACCOUNTS.get("password") or ("Kd-" + secrets.token_urlsafe(12))
+_PASSWORD_GENERATED = not (os.environ.get("KIFARU_SEED_PASSWORD") or _ACCOUNTS.get("password"))
 
 STATIONS = [
     # code, name, lat, lon, cap/h, static cap/h, alt_allowed
@@ -51,20 +71,6 @@ STATIONS = [
     ("ATH", "Athi River Weighbridge", -1.4522, 36.9780, 140, 45, True),
     ("MBS-GATE18", "Port of Mombasa Gate 18 (pre-gate WIM)", -4.0529, 39.6519, 200, 0, False),
     ("GLG", "Gilgil Weighbridge", -0.4928, 36.3228, 120, 40, True),
-]
-
-DEMO_USERS = [
-    # email, name, roles, org key
-    ("admin@demo.invalid", "Platform Administrator", ["platform_admin"], "platform"),
-    ("control@demo.invalid", "Port Control Officer", ["port_controller"], "platform"),
-    ("operator@demo.invalid", "Weighbridge Operator Mariakani", ["weighbridge_operator"], "platform"),
-    ("auditor@demo.invalid", "Compliance Auditor", ["auditor"], "platform"),
-    ("dispatch@transporter-a.invalid", "Simba Transporters Dispatch", ["transporter_admin", "dispatcher"], "simba"),
-    ("driver1@transporter-a.invalid", "Driver Juma", ["driver"], "simba"),
-    ("dispatch@transporter-b.invalid", "Pwani Haulers Admin", ["transporter_admin"], "pwani"),
-    ("owner@cargo-a.invalid", "Mama Mboga Traders", ["cargo_owner"], "mamambo"),
-    ("owner@cargo-b.invalid", "Nakuru Grains Ltd", ["cargo_owner"], "nakuru"),
-    ("wh@warehouse-a.invalid", "Nairobi ICD Warehouse", ["warehouse_manager"], "icd"),
 ]
 
 ORGS = {
@@ -202,7 +208,8 @@ def seed(verbose: bool = True) -> None:
         db.commit()
     if verbose:
         print("Seed complete. Demo accounts (local development only):")
-        print(f"  password for all demo accounts: {DEMO_PASSWORD}" + ("" if os.environ.get("KIFARU_SEED_PASSWORD") else "   (generated; re-run the seed to reset it, or set KIFARU_SEED_PASSWORD)"))
+        print(f"  accounts file: {ACCOUNTS_FILE}")
+        print(f"  password for all demo accounts: {DEMO_PASSWORD}" + ("   (generated; re-run the seed to reset it, or set KIFARU_SEED_PASSWORD)" if _PASSWORD_GENERATED else ""))
         for email, _, roles_, _ in DEMO_USERS:
             print(f"  {email:40s} {', '.join(roles_)}")
 
