@@ -1,0 +1,30 @@
+[project]
+name = "kifaru-gateway"
+version = "0.1.0"
+description = "KIFARU PORTOS roadside edge gateway: DAQ ingest, local clearance mirror, store-and-forward uplink, VMS driver"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26",
+    "paho-mqtt>=2.1",
+    "httpx>=0.27",
+    "python-ulid>=2.0",
+    "kifaru-wim-dsp",
+    "kifaru-api",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2"]
+field = ["pyserial>=3.5", "sllurp>=0.5", "opencv-python-headless", "paddleocr", "ultralytics"]
+
+[project.scripts]
+kifaru-gateway = "kifaru_gateway.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["kifaru_gateway*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

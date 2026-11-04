@@ -1,0 +1,35 @@
+menu "KIFARU aux node"
+
+config KIFARU_STATION
+    string "Station code"
+    default "MARIAKANI"
+
+config KIFARU_LANE
+    string "Lane code"
+    default "L1"
+
+config KIFARU_WIFI_SSID
+    string "Wi-Fi SSID for the MQTT fallback (cabinet AP from the LTE router)"
+    default "kifaru-cabinet"
+
+config KIFARU_WIFI_PASS
+    string "Wi-Fi password"
+    default ""
+
+config KIFARU_MQTT_URI
+    string "MQTT broker URI (fallback path, mqtts://host:8883)"
+    default "mqtts://192.168.10.1:8883"
+
+config KIFARU_CAN_TX_GPIO
+    int "TWAI TX GPIO"
+    default 5
+
+config KIFARU_CAN_RX_GPIO
+    int "TWAI RX GPIO"
+    default 4
+
+config KIFARU_ENV_PERIOD_S
+    int "Environment report period (s)"
+    default 10
+
+endmenu

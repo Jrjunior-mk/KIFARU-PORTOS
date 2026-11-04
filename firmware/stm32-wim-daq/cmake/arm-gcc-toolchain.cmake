@@ -1,0 +1,25 @@
+# CMake toolchain file for Arm GNU Toolchain (arm-none-eabi-gcc 12+ / 13+).
+# Set ARM_TOOLCHAIN_DIR if the compiler is not on PATH, e.g.
+#   cmake -DARM_TOOLCHAIN_DIR="C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.3 rel1/bin" ...
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+set(TOOLCHAIN_PREFIX arm-none-eabi-)
+if(DEFINED ARM_TOOLCHAIN_DIR)
+    set(TOOLCHAIN_PREFIX ${ARM_TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX})
+endif()
+if(WIN32)
+    set(EXE_SUFFIX ".exe")
+endif()
+
+set(CMAKE_C_COMPILER   ${TOOLCHAIN_PREFIX}gcc${EXE_SUFFIX})
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++${EXE_SUFFIX})
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}gcc${EXE_SUFFIX})
+set(CMAKE_OBJCOPY      ${TOOLCHAIN_PREFIX}objcopy${EXE_SUFFIX} CACHE INTERNAL "")
+set(CMAKE_SIZE         ${TOOLCHAIN_PREFIX}size${EXE_SUFFIX} CACHE INTERNAL "")
+
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)   # no linker script needed for the compiler check
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
