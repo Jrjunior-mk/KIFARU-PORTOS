@@ -26,6 +26,7 @@ from ..models import (
     utcnow,
 )
 from ..services import ledger
+from .notifications import notify
 
 router = APIRouter(prefix="/shipments", tags=["shipments"])
 OWNER_WRITE = require_roles("cargo_owner", "transporter_admin", "dispatcher", "platform_admin")
@@ -246,11 +247,27 @@ def advance_stage(shipment_id: str, body: StageIn, db: DbDep, p: Principal = Dep
         publish(EventType.SHIPMENT_DELIVERED, {"shipment_id": s.id, "reference": s.reference}, org_id=s.owner_org_id)
     ledger.append(db, "cargo.status_changed", {"shipment_id": s.id, "from": before, "to": body.stage, "status": body.status, "by": p.user.id}, producer="cargo-passport")
     audit(db, p, "stage", "shipment", s.id, before={"stage": before}, after=body.model_dump())
+    notify(db, user_id=None, org_id=s.owner_org_id, template="cargo_stage", title=f"Shipment {s.reference}: {body.stage} {body.status}",
+           body=f"Shipment {s.reference} is now {body.stage} ({body.status}).", payload={"shipment_id": s.id, "stage": body.stage, "status": body.status})
     db.commit()
     db.refresh(s)
     publish(EventType.CARGO_STATUS_CHANGED, {"shipment_id": s.id, "reference": s.reference, "stage": s.stage, "status": body.status}, org_id=s.owner_org_id)
     if body.stage == "weighing_verification" and body.status == "completed":
         publish(EventType.CARGO_VERIFIED, {"shipment_id": s.id, "reference": s.reference}, org_id=s.owner_org_id)
+    return _passport(db, s)
+
+
+@router.post("/{shipment_id}/predict-release", response_model=PassportOut)
+def predict_release(shipment_id: str, p: CurrentUser, db: DbDep):
+    """Runs the Predictive Release Agent (advisory) and stores P10/P50/P90 plus reasons on the passport."""
+    s = db.get(Shipment, shipment_id)
+    if s is None or not _visible(p, s):
+        raise HTTPException(404, "Shipment not found")
+    from ..workers.jobs import refresh_release_predictions
+
+    refresh_release_predictions(db)
+    db.commit()
+    db.refresh(s)
     return _passport(db, s)
 
 

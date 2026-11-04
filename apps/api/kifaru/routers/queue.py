@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from ..deps import CurrentUser, DbDep, Principal, audit, org_scope, require_roles
 from ..events import EventType, publish
-from ..models import Appointment, QueueRecord, Vehicle, WeighingStation, utcnow
+from ..models import Appointment, QueueRecord, Shipment, Vehicle, Warehouse, WeighingStation, utcnow
 from ..services.queue_forecast import forecast_station, slot_capacity
 
 router = APIRouter(prefix="/queue", tags=["queue"])
@@ -168,7 +168,14 @@ def my_appointments(p: CurrentUser, db: DbDep, station_id: str | None = None):
         q = q.where(Appointment.station_id == station_id)
     scope = org_scope(p)
     if scope:
-        q = q.join(Vehicle, Vehicle.id == Appointment.vehicle_id).where(Vehicle.org_id == scope)
+        own_vehicle = Vehicle.org_id == scope
+        q = q.join(Vehicle, Vehicle.id == Appointment.vehicle_id)
+        if p.has_role("warehouse_manager"):
+            wh_ids = select(Warehouse.id).where(Warehouse.org_id == scope)
+            inbound = Appointment.shipment_id.in_(select(Shipment.id).where(Shipment.warehouse_id.in_(wh_ids)))
+            q = q.where(or_(own_vehicle, inbound))
+        else:
+            q = q.where(own_vehicle)
     return [_a_out(db, a) for a in db.execute(q).scalars()]
 
 

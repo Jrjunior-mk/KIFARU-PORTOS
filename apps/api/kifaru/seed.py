@@ -14,6 +14,7 @@ from .db import ensure_schemas, get_engine, get_sessionmaker
 from .models import (
     ROLE_NAMES,
     Base,
+    CalibrationRecord,
     CargoDeclaration,
     CargoProcessingEvent,
     ElectronicSeal,
@@ -128,7 +129,14 @@ def seed(verbose: bool = True) -> None:
                     db.add(lane)
                     db.flush()
                     for i, (kind, pos) in enumerate(DEFAULT_LANE_SENSORS):
-                        db.add(Sensor(lane_id=lane.id, kind=kind, channel=i, install_position_m=pos, serial=f"{code}-L{lane_no}-{kind[:4].upper()}-{i:02d}"))
+                        sensor = Sensor(lane_id=lane.id, kind=kind, channel=i, install_position_m=pos, serial=f"{code}-L{lane_no}-{kind[:4].upper()}-{i:02d}")
+                        db.add(sensor)
+                        if kind in ("piezo_quartz", "bending_plate"):
+                            db.flush()
+                            db.add(CalibrationRecord(sensor_id=sensor.id, method="reference_vehicle", reference_mass_kg=30000, gain=1.0, offset=0.0,
+                                                     temp_coeff_per_c=-0.002, reference_temp_c=25.0, uncertainty_pct=2.0,
+                                                     valid_from=utcnow() - timedelta(days=30), valid_to=utcnow() + timedelta(days=150),
+                                                     notes="seeded demo calibration (not a real calibration)"))
                 if scap:
                     db.add(Lane(station_id=st.id, lane_no=9, type="static", direction="inbound", device_id=f"static-{code.lower()}"))
                 db.add(QueueRecord(station_id=st.id, ts=utcnow(), kind="observed", queue_len=12, avg_wait_s=900, utilisation=0.6, arrivals_per_hour=cap * 0.6, source="simulated"))

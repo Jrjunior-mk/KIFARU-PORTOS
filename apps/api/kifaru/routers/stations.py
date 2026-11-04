@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -73,8 +73,15 @@ class StationOut(BaseModel):
     decisions_last_hour: dict[str, int]
 
 
+def _aware(dt: datetime | None) -> datetime | None:
+    """SQLite returns naive datetimes; normalise so comparisons never mix naive and aware values."""
+    if dt is None:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+
+
 def _sensor_out(s: Sensor) -> SensorOut:
-    latest = max((c.valid_to for c in s.calibrations), default=None)
+    latest = max((_aware(c.valid_to) for c in s.calibrations), default=None)
     return SensorOut(id=s.id, kind=s.kind, serial=s.serial, channel=s.channel, install_position_m=s.install_position_m, status=s.status,
                      health_reason=s.health_reason, last_reading_at=s.last_reading_at, calibration_valid_to=latest)
 
@@ -222,7 +229,7 @@ def _recompute_lane_validity(lane: Lane) -> None:
     valids = []
     for x in lane.sensors:
         if x.kind in LOAD_SENSOR_KINDS:
-            valids.append(max((c.valid_to for c in x.calibrations), default=None))
+            valids.append(max((_aware(c.valid_to) for c in x.calibrations), default=None))
     lane.calibration_valid_to = min(valids) if valids and all(v is not None for v in valids) else None
 
 

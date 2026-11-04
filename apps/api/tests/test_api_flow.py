@@ -292,17 +292,32 @@ def test_admin_users_audit_incidents_agents(client, admin):
 
 
 def test_calibration_expiry_blocks_green(client, admin, operator):
+    """An expired lane calibration must block GREEN (QUALITY_BLOCKING) even when the measurement itself is clean."""
+    from datetime import timedelta
+
+    from kifaru.db import get_sessionmaker
+    from kifaru.models import Lane, utcnow
+
     sts = client.get(f"{API}/stations", headers=h(admin)).json()
     ath = next(s for s in sts if s["code"] == "ATH")
     lane = next(ln for ln in ath["lanes"] if ln["type"] == "wim_highspeed")
     piezo = next(s for s in lane["sensors"] if s["kind"] == "piezo_quartz")
     r = client.post(f"{API}/stations/sensors/{piezo['id']}/calibrations", headers=h(operator), json={"method": "reference_vehicle", "reference_mass_kg": 30000, "gain": 1.01, "valid_days": 90})
     assert r.status_code == 201
-    # other load sensors have no calibration record -> lane validity becomes None -> engine treats as expired -> no GREEN
-    r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "count": 4, "seed": 2, "overload_prob": 0.0, "sensor_fault_prob": 0.0, "unregistered_prob": 0.0})
-    for ev in r.json():
-        assert ev["decision"]["decision"] != "GREEN"
-        assert any(x["rule"] == "QUALITY_BLOCKING" for x in ev["decision"]["rules_fired"])
+    with get_sessionmaker()() as db:  # expire the lane calibration (no API path may do this: it is a maintenance fact)
+        ln = db.get(Lane, lane["id"])
+        saved = ln.calibration_valid_to
+        ln.calibration_valid_to = utcnow() - timedelta(days=1)
+        db.commit()
+    try:
+        r = client.post(f"{API}/weighing/simulate", headers=h(operator), json={"lane_id": lane["id"], "count": 4, "seed": 2, "overload_prob": 0.0, "sensor_fault_prob": 0.0, "unregistered_prob": 0.0})
+        for ev in r.json():
+            assert ev["decision"]["decision"] != "GREEN"
+            assert any(x["rule"] == "QUALITY_BLOCKING" for x in ev["decision"]["rules_fired"])
+    finally:
+        with get_sessionmaker()() as db:
+            db.get(Lane, lane["id"]).calibration_valid_to = saved
+            db.commit()
 
 
 def test_websocket_receives_live_events(client, operator):

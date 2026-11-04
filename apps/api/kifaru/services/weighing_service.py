@@ -70,7 +70,7 @@ def process_lane_pass(
         if existing:
             return existing  # idempotent replay from store-and-forward
 
-    publish(EventType.TRUCK_DETECTED, {"lane_id": lane.id}, station_id=lane.station_id, source=source)
+    publish(EventType.TRUCK_DETECTED, {"lane_id": lane.id, "anpr_plate": anpr_plate, "rfid_epc": rfid_epc}, station_id=lane.station_id, source=source)
     publish(EventType.WEIGHING_STARTED, {"lane_id": lane.id}, station_id=lane.station_id, source=source)
 
     ident = identity_svc.resolve(db, anpr_plate, anpr_conf, rfid_epc, rfid_conf)
@@ -228,6 +228,7 @@ def process_lane_pass(
         "u_kg": ev.gvm_uncertainty_kg,
         "axle_config": ev.detected_axle_config,
         "lane_id": lane.id,
+        "station_code": station_code,
         "ticket_id": ticket.id,
         "ticket_qr_token": ticket.qr_token,
         "latency_ms": latency_ms,
@@ -240,6 +241,12 @@ def process_lane_pass(
         publish(EventType.TRUCK_DIVERTED, payload, station_id=lane.station_id, org_id=org_id, source=source)
     else:
         publish(EventType.TRUCK_RELEASED, payload, station_id=lane.station_id, org_id=org_id, source=source)
+    if vehicle:
+        from ..routers.notifications import notify
+
+        notify(db, user_id=None, org_id=vehicle.org_id, template="clearance", title=f"{vehicle.plate}: {dec.decision} at {station_code}",
+               body=f"{vehicle.plate} {dec.decision} at {station_code}. {INSTRUCTIONS[dec.decision]}",
+               payload={"weighing_event_id": ev.id, "decision": dec.decision, "vehicle_id": vehicle.id, "source": source})
     if shipment:
         shipment.stage = "weighing_verification" if dec.decision != "GREEN" else shipment.stage
     return ev
