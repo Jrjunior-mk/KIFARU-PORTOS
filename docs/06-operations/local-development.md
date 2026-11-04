@@ -100,8 +100,7 @@ docker run --rm -p 8000:8000 -e KIFARU_DATABASE_URL=sqlite:////tmp/k.db -e KIFAR
 
 ## Demo accounts (seed data)
 
-Created by `python -m kifaru.seed` (idempotent). **Password for all: `***REMOVED***`** (`DEMO_PASSWORD` in
-`apps/api/kifaru/seed.py`). Local/dev/staging only — production never runs the seed (the `ecs` module refuses to create
+Created by `python -m kifaru.seed` (idempotent). The password is generated per seed run (or set with `KIFARU_SEED_PASSWORD`) and printed once by the seed command; it is not recorded in the repository. Local/dev/staging only — production never runs the seed (the `ecs` module refuses to create
 the seed task for `env = prod`).
 
 | E-mail | Role(s) | Organisation |

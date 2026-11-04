@@ -14,7 +14,7 @@ npm run dev            # http://localhost:5173 — /api and /ws are proxied to h
 ```
 
 Run the backend first (from `apps/api`): `python -m kifaru.seed` then `python -m uvicorn kifaru.main:app --port 8000`.
-Demo accounts (password `***REMOVED***`): admin@demo.invalid, control@demo.invalid, operator@demo.invalid, auditor@demo.invalid,
+Demo accounts: created by `python -m kifaru.seed`, which prints the e-mail addresses and a generated password once (not stored in the repository).
 dispatch@transporter-a.invalid, driver1@transporter-a.invalid, owner@cargo-a.invalid, wh@warehouse-a.invalid.
 
 ## Scripts

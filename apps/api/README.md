@@ -18,7 +18,7 @@ cp .env.example .env                       # edit if needed
 ../../.venv/Scripts/python -m uvicorn kifaru.main:app --reload --port 8000
 ```
 
-Open http://localhost:8000/docs. Demo password for all seeded accounts: `***REMOVED***` (dev only).
+Open http://localhost:8000/docs. The seed prints the demo accounts and a generated password once (dev only; set `KIFARU_SEED_PASSWORD` to choose it).
 
 ## PostgreSQL
 

@@ -113,7 +113,7 @@ Every production deployment records: image digest, Alembic head, `KIFARU_SIGNING
 | RDS credentials | Secrets Manager rotation / IAM auth (designed) | 90 days / none with IAM | Immediately |
 | Integration tokens `KIFARU_INT_<NAME>_TOKEN`, `KIFARU_AT_API_KEY` | Env from Secrets Manager | Per provider, ≤ 12 months | Immediately |
 | User TOTP secrets | `users.mfa_secret` | On user request / device loss | Admin disables MFA → user re-enrols |
-| Demo seed password | `seed.py DEMO_PASSWORD` | Never used in production; production users created via `/admin/users` | n/a |
+| Demo seed password | generated per seed run or `KIFARU_SEED_PASSWORD` | Never used in production; production users created via `/admin/users` | n/a |
 
 ### 6.1 Rotating the JWT secret
 

@@ -58,7 +58,7 @@ python -m venv .venv
 # 2. Backend (SQLite by default; see apps/api/.env.example for PostgreSQL/Redis/MQTT)
 cd apps/api
 ../../.venv/Scripts/python -m alembic upgrade head
-../../.venv/Scripts/python -m kifaru.seed          # demo data; prints demo accounts (password ***REMOVED***)
+../../.venv/Scripts/python -m kifaru.seed          # demo data; prints the demo accounts and a generated password once
 ../../.venv/Scripts/python -m uvicorn kifaru.main:app --reload --port 8000   # http://localhost:8000/docs
 
 # 3. Frontend (second terminal)
@@ -91,18 +91,9 @@ Verified results and their caveats: `docs/06-operations/test-results.md`.
 
 ## Demo accounts (local only)
 
-| Email | Role |
-|---|---|
-| admin@demo.invalid | platform_admin |
-| control@demo.invalid | port_controller |
-| operator@demo.invalid | weighbridge_operator |
-| auditor@demo.invalid | auditor |
-| dispatch@transporter-a.invalid | transporter_admin, dispatcher |
-| driver1@transporter-a.invalid | driver |
-| owner@cargo-a.invalid | cargo_owner |
-| wh@warehouse-a.invalid | warehouse_manager |
-
-Password for all: `***REMOVED***`. Production seeding never creates demo users.
+The seed command creates one account per role and prints the e-mail addresses together with a password that is
+generated for that run (or taken from `KIFARU_SEED_PASSWORD`). Credentials are deliberately not listed in this
+repository. Production seeding never creates demo users.
 
 ## What the owner must provide to go live
 
